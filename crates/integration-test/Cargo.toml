@@ -1,0 +1,21 @@
+[package]
+name = "anoma-kind-tables-integration-test"
+version.workspace = true
+description = "Integration tests for the Anoma kind tables: on-chain token identity and commitment freshness."
+publish = false
+keywords.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+edition.workspace = true
+
+[dependencies]
+alloy = { workspace = true }
+alloy-chains = { workspace = true }
+anoma-kind-tables = { workspace = true }
+anoma-pa-evm-bindings = { workspace = true }
+anoma-rm-risc0 = { workspace = true }
+anyhow = { workspace = true }
+risc0-zkvm = { workspace = true }
+tokio = { workspace = true }

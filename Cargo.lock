@@ -1078,6 +1078,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "anoma-kind-tables-integration-test"
+version = "0.1.0"
+dependencies = [
+ "alloy",
+ "alloy-chains",
+ "anoma-kind-tables",
+ "anoma-pa-evm-bindings",
+ "anoma-rm-risc0 2.0.0-rc.4",
+ "anyhow",
+ "risc0-zkvm",
+ "tokio",
+]
+
+[[package]]
 name = "anoma-pa-evm-bindings"
 version = "3.0.0-rc.4"
 source = "git+https://github.com/anoma/pa-evm?rev=c7e86cf5144cc0c306c6dfae629488d7055d142b#c7e86cf5144cc0c306c6dfae629488d7055d142b"

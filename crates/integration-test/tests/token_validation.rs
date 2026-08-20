@@ -1,0 +1,47 @@
+//! On-chain validation of `tokens.json`: every supported token exists and reports the recorded identity.
+//! Runs on every pull request and push, so a bad address never merges anywhere.
+
+use alloy::providers::Provider;
+use alloy::sol;
+use anoma_kind_tables::tokens;
+use anoma_kind_tables_integration_test::provider;
+use anyhow::{Context, Result, ensure};
+
+sol! {
+    #[sol(rpc)]
+    interface IERC20Metadata {
+        function name() external view returns (string);
+        function symbol() external view returns (string);
+        function decimals() external view returns (uint8);
+    }
+}
+
+#[tokio::test]
+async fn every_supported_token_reports_its_recorded_identity() -> Result<()> {
+    for (&chain, supported) in tokens::all() {
+        let provider = provider(chain)?;
+        for token in supported {
+            let context = || format!("{} ({}) on {chain}", token.symbol, token.address);
+
+            let code = provider
+                .get_code_at(token.address)
+                .await
+                .with_context(context)?;
+            ensure!(!code.is_empty(), "no contract at {}", context());
+
+            let contract = IERC20Metadata::new(token.address, &provider);
+            let symbol = contract.symbol().call().await.with_context(context)?;
+            let name = contract.name().call().await.with_context(context)?;
+            let decimals = contract.decimals().call().await.with_context(context)?;
+
+            ensure!(symbol == token.symbol, "{}: symbol is {symbol}", context());
+            ensure!(name == token.name, "{}: name is {name}", context());
+            ensure!(
+                decimals == token.decimals,
+                "{}: decimals is {decimals}",
+                context()
+            );
+        }
+    }
+    Ok(())
+}
