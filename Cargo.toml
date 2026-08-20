@@ -1,0 +1,35 @@
+[workspace]
+resolver = "3"
+members = ["crates/kind-tables"]
+
+[workspace.package]
+version = "0.1.0"
+keywords = ["anoma", "kind-table", "protocol-adapter"]
+authors = ["Anoma Foundation"]
+license = "MIT"
+repository = "https://github.com/anoma/kind-tables"
+homepage = "https://anoma.net/"
+edition = "2024"
+
+[workspace.dependencies]
+alloy = { version = "2.3.0", features = ["full"] }
+alloy-chains = "0.2.36"
+anoma-generic-call-forwarder-bindings = "2.0.0-rc.0"
+anoma-generic-call-library = "1.0.0"
+anoma-pa-evm-bindings = { git = "https://github.com/anoma/pa-evm", rev = "c7e86cf5144cc0c306c6dfae629488d7055d142b" }
+anoma-rm-risc0 = { git = "https://github.com/anoma/arm-risc0", rev = "acd7f75d1ad3a0ec56067e20e33645442290e276", default-features = false, features = [
+  "transaction",
+] }
+anomapay-erc20-forwarder-bindings = "3.0.0-rc.6"
+anyhow = "1.0.104"
+dotenvy = "0.15.7"
+hex = "0.4.3"
+k256 = { version = "0.13.3", features = ["arithmetic", "hash2curve"] }
+risc0-zkvm = { version = "3.0.6", default-features = false }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+thiserror = "2.0.19"
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros"] }
+transfer_library = "2.0.0"
+
+anoma-kind-tables = { path = "crates/kind-tables" }
