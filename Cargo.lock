@@ -1094,7 +1094,7 @@ dependencies = [
 [[package]]
 name = "anoma-pa-evm-bindings"
 version = "3.0.0-rc.4"
-source = "git+https://github.com/anoma/pa-evm?rev=c7e86cf5144cc0c306c6dfae629488d7055d142b#c7e86cf5144cc0c306c6dfae629488d7055d142b"
+source = "git+https://github.com/anoma/pa-evm?rev=fc1084c6e709260d332c78117d64000f531e083a#fc1084c6e709260d332c78117d64000f531e083a"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1127,7 +1127,7 @@ dependencies = [
 [[package]]
 name = "anoma-rm-risc0"
 version = "2.0.0-rc.4"
-source = "git+https://github.com/anoma/arm-risc0?rev=acd7f75d1ad3a0ec56067e20e33645442290e276#acd7f75d1ad3a0ec56067e20e33645442290e276"
+source = "git+https://github.com/anoma/arm-risc0?tag=v2.0.0-rc.4#acd7f75d1ad3a0ec56067e20e33645442290e276"
 dependencies = [
  "alloy-primitives",
  "alloy-sol-types",

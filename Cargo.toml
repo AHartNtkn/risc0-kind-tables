@@ -16,8 +16,8 @@ alloy = { version = "2.3.0", features = ["full"] }
 alloy-chains = "0.2.36"
 anoma-generic-call-forwarder-bindings = "2.0.0-rc.0"
 anoma-generic-call-library = "1.0.0"
-anoma-pa-evm-bindings = { git = "https://github.com/anoma/pa-evm", rev = "c7e86cf5144cc0c306c6dfae629488d7055d142b" }
-anoma-rm-risc0 = { git = "https://github.com/anoma/arm-risc0", rev = "acd7f75d1ad3a0ec56067e20e33645442290e276", default-features = false, features = [
+anoma-pa-evm-bindings = { git = "https://github.com/anoma/pa-evm", rev = "fc1084c6e709260d332c78117d64000f531e083a" }
+anoma-rm-risc0 = { git = "https://github.com/anoma/arm-risc0", tag = "v2.0.0-rc.4", default-features = false, features = [
   "transaction",
 ] }
 anomapay-erc20-forwarder-bindings = "3.0.0-rc.6"
