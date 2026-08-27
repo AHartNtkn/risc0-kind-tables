@@ -1,11 +1,12 @@
 //! Generated chain tables and their commitments, one set per environment. A chain's table lives in
-//! `data/generated/<environment>/<chain>.json`; the commitments are embedded and looked up per chain.
+//! `data/generated/<environment>/<chain id>.json`; the commitments are embedded and looked up per chain.
 
 use crate::commitment;
 use crate::entry::Entry;
 use crate::error::{Error, Result};
 use alloy_chains::NamedChain;
 use risc0_zkvm::Digest;
+use serde::Deserialize;
 use std::collections::BTreeMap;
 use std::path::Path;
 
@@ -49,17 +50,22 @@ impl Table {
     }
 }
 
+/// One chain's recorded commitment. The `_comment` naming the chain is review context and is not deserialized.
+#[derive(Deserialize)]
+struct ChainCommitment {
+    commitment: String,
+}
+
 fn parse_commitments(json: &str) -> BTreeMap<NamedChain, Digest> {
     use hex::FromHex;
-    let raw: BTreeMap<String, String> =
+    let raw: BTreeMap<u64, ChainCommitment> =
         serde_json::from_str(json).expect("commitments.json: invalid JSON");
     raw.into_iter()
-        .map(|(chain, digest)| {
+        .map(|(id, recorded)| {
             // A chain that fails to resolve must fail loudly: dropping it would erase its freshness assertion.
-            let chain: NamedChain = chain
-                .parse()
-                .unwrap_or_else(|_| panic!("unknown chain name: {chain}"));
-            let digest = Digest::from_hex(&digest)
+            let chain =
+                NamedChain::try_from(id).unwrap_or_else(|_| panic!("unknown chain ID: {id}"));
+            let digest = Digest::from_hex(&recorded.commitment)
                 .unwrap_or_else(|_| panic!("invalid commitment for {chain}"));
             (chain, digest)
         })

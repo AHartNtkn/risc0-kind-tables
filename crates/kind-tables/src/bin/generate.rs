@@ -2,15 +2,31 @@
 //! dependencies (circuit IDs, forwarder and protocol adapter deployment records). CI reruns this and fails on
 //! any diff, so the committed artifacts always match the pins.
 
+use anoma_generic_call_forwarder_bindings::addresses::Environment as GenericCallEnvironment;
 use anoma_kind_tables::{Entry, commitment, kind, tokens};
 use anoma_pa_evm_bindings::addresses::{Environment, protocol_adapter_deployments_map};
+use anomapay_erc20_forwarder_bindings::addresses::Environment as Erc20Environment;
 use anyhow::{Context, Result, bail};
 use risc0_zkvm::Digest;
 use risc0_zkvm::sha::{Impl, Sha256};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
+
+/// One chain's authored section. The `_comment` naming the chain is review context and is not deserialized.
+#[derive(Deserialize)]
+struct ChainAliases {
+    aliases: Vec<Alias>,
+}
+
+/// One row of `commitments.json`: the chain it belongs to, named for review, and the table commitment.
+#[derive(Serialize)]
+struct ChainCommitment {
+    #[serde(rename = "_comment")]
+    comment: String,
+    commitment: String,
+}
 
 /// One aliasing decision: the `alias` key takes the point of the canonical `of` key, making the two kinds one.
 #[derive(Deserialize)]
@@ -45,6 +61,21 @@ fn sha256(bytes: &[u8]) -> Digest {
     *Impl::hash_bytes(bytes)
 }
 
+/// The protocol adapter's environment is the generator's; each forwarder crate declares its own.
+fn erc20_environment(environment: Environment) -> Erc20Environment {
+    match environment {
+        Environment::Staging => Erc20Environment::Staging,
+        Environment::Production => Erc20Environment::Production,
+    }
+}
+
+fn generic_call_environment(environment: Environment) -> GenericCallEnvironment {
+    match environment {
+        Environment::Staging => GenericCallEnvironment::Staging,
+        Environment::Production => GenericCallEnvironment::Production,
+    }
+}
+
 fn entry(comment: String, logic_ref: Digest, label_ref: Digest) -> Result<Entry> {
     Ok(Entry {
         comment: Some(comment),
@@ -54,7 +85,11 @@ fn entry(comment: String, logic_ref: Digest, label_ref: Digest) -> Result<Entry>
     })
 }
 
-fn chain_entries(chain: alloy_chains::NamedChain, aliases: &[Alias]) -> Result<Vec<Entry>> {
+fn chain_entries(
+    environment: Environment,
+    chain: alloy_chains::NamedChain,
+    aliases: &[Alias],
+) -> Result<Vec<Entry>> {
     let padding_logic = digest(anoma_rm_risc0::constants::PADDING_LOGIC_VK.as_bytes());
     let transfer_logic = digest(transfer_library::TOKEN_TRANSFER_ID.as_bytes());
     let generic_call_logic = digest(anoma_generic_call_library::GENERIC_CALL_ID.as_bytes());
@@ -66,7 +101,10 @@ fn chain_entries(chain: alloy_chains::NamedChain, aliases: &[Alias]) -> Result<V
     )?];
 
     if let Some(forwarder) =
-        anoma_generic_call_forwarder_bindings::addresses::generic_call_forwarder_address(&chain)
+        anoma_generic_call_forwarder_bindings::addresses::generic_call_forwarder_address(
+            generic_call_environment(environment),
+            &chain,
+        )
     {
         entries.push(entry(
             format!("generic call via forwarder {forwarder}"),
@@ -76,11 +114,17 @@ fn chain_entries(chain: alloy_chains::NamedChain, aliases: &[Alias]) -> Result<V
     }
 
     let supported = tokens::on(chain);
-    match anomapay_erc20_forwarder_bindings::addresses::erc20_forwarder_address(&chain) {
+    match anomapay_erc20_forwarder_bindings::addresses::erc20_forwarder_address(
+        erc20_environment(environment),
+        &chain,
+    ) {
         Some(forwarder) => {
             for token in supported {
                 entries.push(entry(
-                    format!("{} via ERC20 forwarder {forwarder}", token.symbol),
+                    format!(
+                        "{} {} via ERC20 forwarder {forwarder}",
+                        token.symbol, token.address
+                    ),
                     transfer_logic,
                     sha256(&[forwarder.as_slice(), token.address.as_slice()].concat()),
                 )?);
@@ -137,7 +181,7 @@ fn chain_entries(chain: alloy_chains::NamedChain, aliases: &[Alias]) -> Result<V
 
 fn main() -> Result<()> {
     let data = Path::new(env!("CARGO_MANIFEST_DIR")).join("data");
-    let aliases: BTreeMap<String, Vec<Alias>> =
+    let aliases: BTreeMap<u64, ChainAliases> =
         serde_json::from_str(&fs::read_to_string(data.join("aliases.json"))?)
             .context("aliases.json")?;
 
@@ -151,8 +195,6 @@ fn main() -> Result<()> {
         }
         fs::create_dir_all(&out)?;
 
-        // The forwarder records carry no environment sections yet; both environments read the same maps until
-        // the forwarder repos gain them.
         let mut chains: Vec<_> = protocol_adapter_deployments_map(environment)
             .into_keys()
             .collect();
@@ -161,16 +203,22 @@ fn main() -> Result<()> {
         let mut commitments = BTreeMap::new();
         for chain in chains {
             let entries = chain_entries(
+                environment,
                 chain,
-                aliases.get(&chain.to_string()).map_or(&[], Vec::as_slice),
+                aliases
+                    .get(&(chain as u64))
+                    .map_or(&[], |section| section.aliases.as_slice()),
             )?;
             fs::write(
-                out.join(format!("{chain}.json")),
+                out.join(format!("{}.json", chain as u64)),
                 serde_json::to_string_pretty(&entries)? + "\n",
             )?;
             commitments.insert(
-                chain.to_string(),
-                hex::encode(commitment::of(&entries).as_bytes()),
+                chain as u64,
+                ChainCommitment {
+                    comment: chain.to_string(),
+                    commitment: hex::encode(commitment::of(&entries).as_bytes()),
+                },
             );
         }
         fs::write(

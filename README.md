@@ -16,12 +16,14 @@ crates/kind-tables/            the library and the generator
 │   ├── tokens.json            authored: the supported tokens, per chain
 │   ├── aliases.json           authored: the aliasing decisions, per chain
 │   └── generated/
-│       ├── staging/           <chain>.json tables + commitments.json
+│       ├── staging/           <chain id>.json tables + commitments.json
 │       └── production/
 └── src/
 crates/integration-test/       on-chain token validation, promotion freshness gate, arm-risc0 cross-check
 docs/adr/                      the decisions behind this layout
 ```
+
+Every chain-keyed file — `tokens.json`, `aliases.json`, `commitments.json` — is keyed by chain ID, as the forwarder and protocol adapter deployment records they are generated from are, and each section carries the chain name in a `_comment` the loaders ignore. A generated table is named for the chain ID it belongs to and is otherwise `anoma-rm-risc0`'s kind table schema, so `init_kind_table_from_file` reads one unchanged.
 
 ## Workflows
 
