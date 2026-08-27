@@ -14,13 +14,13 @@ edition = "2024"
 [workspace.dependencies]
 alloy = { version = "2.3.0", features = ["full"] }
 alloy-chains = "0.2.36"
-anoma-generic-call-forwarder-bindings = "2.0.0-rc.0"
+anoma-generic-call-forwarder-bindings = "2.0.0-rc.1"
 anoma-generic-call-library = "1.0.0"
-anoma-pa-evm-bindings = { git = "https://github.com/anoma/pa-evm", rev = "fc1084c6e709260d332c78117d64000f531e083a" }
+anoma-pa-evm-bindings = { git = "https://github.com/anoma/pa-evm", tag = "bindings/v3.0.0-rc.6" }
 anoma-rm-risc0 = { git = "https://github.com/anoma/arm-risc0", tag = "v2.0.0-rc.4", default-features = false, features = [
   "transaction",
 ] }
-anomapay-erc20-forwarder-bindings = "3.0.0-rc.6"
+anomapay-erc20-forwarder-bindings = "3.0.0-rc.8"
 anyhow = "1.0.104"
 dotenvy = "0.15.7"
 hex = "0.4.3"
