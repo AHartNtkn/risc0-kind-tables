@@ -25,7 +25,7 @@ anyhow = "1.0.104"
 dotenvy = "0.15.7"
 hex = "0.4.3"
 k256 = { version = "0.13.3", features = ["arithmetic", "hash2curve"] }
-risc0-zkvm = { version = "3.0.6", default-features = false }
+risc0-zkvm = { version = "3.0.3", default-features = false }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 thiserror = "2.0.19"
