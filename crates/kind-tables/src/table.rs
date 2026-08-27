@@ -1,5 +1,5 @@
 //! Generated chain tables and their commitments, one set per environment. A chain's table lives in
-//! `data/generated/<environment>/<chain id>.json`; the commitments are embedded and looked up per chain.
+//! `data/generated/<environment>/<chain id>.json`; the tables and commitments are embedded and looked up per chain.
 
 use crate::commitment;
 use crate::entry::Entry;
@@ -73,13 +73,23 @@ fn parse_commitments(json: &str) -> BTreeMap<NamedChain, Digest> {
 }
 
 macro_rules! environment_module {
-    ($name:ident, $path:literal) => {
+    ($name:ident, $commitments_path:literal $(, ($id:literal, $table_path:literal))*) => {
         pub mod $name {
             use super::*;
             use std::sync::LazyLock;
 
             static COMMITMENTS: LazyLock<BTreeMap<NamedChain, Digest>> =
-                LazyLock::new(|| parse_commitments(include_str!($path)));
+                LazyLock::new(|| parse_commitments(include_str!($commitments_path)));
+
+            static TABLES: LazyLock<BTreeMap<NamedChain, Table>> = LazyLock::new(|| {
+                let tables: Vec<(NamedChain, Table)> = vec![$((
+                    NamedChain::try_from($id as u64)
+                        .unwrap_or_else(|_| panic!("unknown chain ID: {}", $id)),
+                    Table::from_json(include_str!($table_path))
+                        .unwrap_or_else(|error| panic!("invalid table for chain ID {}: {error}", $id)),
+                )),*];
+                tables.into_iter().collect()
+            });
 
             /// The chains this environment records a table for.
             pub fn chains() -> Vec<NamedChain> {
@@ -98,9 +108,53 @@ macro_rules! environment_module {
                     .copied()
                     .ok_or(Error::UnrecordedChain(chain))
             }
+
+            /// The tables of all recorded chains.
+            pub fn tables() -> &'static BTreeMap<NamedChain, Table> {
+                &TABLES
+            }
+
+            /// The table recorded for the chain.
+            pub fn table(chain: NamedChain) -> Result<&'static Table> {
+                TABLES.get(&chain).ok_or(Error::UnrecordedChain(chain))
+            }
         }
     };
 }
 
-environment_module!(staging, "../data/generated/staging/commitments.json");
+environment_module!(
+    staging,
+    "../data/generated/staging/commitments.json",
+    (11155111, "../data/generated/staging/11155111.json"),
+    (84532, "../data/generated/staging/84532.json")
+);
 environment_module!(production, "../data/generated/production/commitments.json");
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The macro invocation lists the table files by hand, so pin it to `commitments.json`.
+    #[test]
+    fn embedded_tables_match_the_recorded_commitments() {
+        for (module, commitments, tables) in [
+            ("staging", staging::commitments(), staging::tables()),
+            (
+                "production",
+                production::commitments(),
+                production::tables(),
+            ),
+        ] {
+            let recorded: Vec<&NamedChain> = commitments.keys().collect();
+            let embedded: Vec<&NamedChain> = tables.keys().collect();
+            assert_eq!(recorded, embedded, "{module}: chains out of sync");
+            for (chain, commitment) in commitments {
+                assert_eq!(
+                    tables[chain].commitment(),
+                    *commitment,
+                    "{module}: stale table for {chain}"
+                );
+            }
+        }
+    }
+}
