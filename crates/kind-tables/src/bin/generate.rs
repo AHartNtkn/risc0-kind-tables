@@ -9,10 +9,24 @@ use anomapay_erc20_forwarder_bindings::addresses::Environment as Erc20Environmen
 use anyhow::{Context, Result, bail};
 use risc0_zkvm::Digest;
 use risc0_zkvm::sha::{Impl, Sha256};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
+
+/// One chain's authored section. The `_comment` naming the chain is review context and is not deserialized.
+#[derive(Deserialize)]
+struct ChainAliases {
+    aliases: Vec<Alias>,
+}
+
+/// One row of `commitments.json`: the chain it belongs to, named for review, and the table commitment.
+#[derive(Serialize)]
+struct ChainCommitment {
+    #[serde(rename = "_comment")]
+    comment: String,
+    commitment: String,
+}
 
 /// One aliasing decision: the `alias` key takes the point of the canonical `of` key, making the two kinds one.
 #[derive(Deserialize)]
@@ -164,7 +178,7 @@ fn chain_entries(
 
 fn main() -> Result<()> {
     let data = Path::new(env!("CARGO_MANIFEST_DIR")).join("data");
-    let aliases: BTreeMap<String, Vec<Alias>> =
+    let aliases: BTreeMap<u64, ChainAliases> =
         serde_json::from_str(&fs::read_to_string(data.join("aliases.json"))?)
             .context("aliases.json")?;
 
@@ -188,15 +202,20 @@ fn main() -> Result<()> {
             let entries = chain_entries(
                 environment,
                 chain,
-                aliases.get(&chain.to_string()).map_or(&[], Vec::as_slice),
+                aliases
+                    .get(&(chain as u64))
+                    .map_or(&[], |section| section.aliases.as_slice()),
             )?;
             fs::write(
-                out.join(format!("{chain}.json")),
+                out.join(format!("{}.json", chain as u64)),
                 serde_json::to_string_pretty(&entries)? + "\n",
             )?;
             commitments.insert(
-                chain.to_string(),
-                hex::encode(commitment::of(&entries).as_bytes()),
+                chain as u64,
+                ChainCommitment {
+                    comment: chain.to_string(),
+                    commitment: hex::encode(commitment::of(&entries).as_bytes()),
+                },
             );
         }
         fs::write(

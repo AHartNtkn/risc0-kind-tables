@@ -3,19 +3,20 @@
 //! this test needs; it also derives every point from its key, so the check runs on an alias-free table and an
 //! aliased one is skipped until the upstream schema carries points.
 
+use alloy_chains::NamedChain;
 use anoma_kind_tables::Table;
 use anoma_rm_risc0::constants::{global_kind_table_hash, init_kind_table_from_file};
 use std::path::PathBuf;
 
-fn staging_table(chain: &str) -> PathBuf {
+fn staging_table(chain: NamedChain) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("../kind-tables/data/generated/staging")
-        .join(format!("{chain}.json"))
+        .join(format!("{}.json", chain as u64))
 }
 
 #[test]
 fn the_local_commitment_matches_the_circuit_loader() {
-    let path = staging_table("base-sepolia");
+    let path = staging_table(NamedChain::BaseSepolia);
     let table = Table::load(&path).expect("the staging base-sepolia table exists");
 
     if !table.aliases().is_empty() {

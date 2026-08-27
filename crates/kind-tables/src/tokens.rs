@@ -16,17 +16,21 @@ pub struct Token {
     pub address: Address,
 }
 
+/// One chain's authored section. The `_comment` naming the chain is review context and is not deserialized.
+#[derive(Deserialize)]
+struct ChainTokens {
+    tokens: Vec<Token>,
+}
+
 static TOKENS: LazyLock<BTreeMap<NamedChain, Vec<Token>>> = LazyLock::new(|| {
-    let raw: BTreeMap<String, Vec<Token>> =
-        serde_json::from_str(include_str!("../data/tokens.json"))
-            .expect("tokens.json: invalid JSON");
+    let raw: BTreeMap<u64, ChainTokens> = serde_json::from_str(include_str!("../data/tokens.json"))
+        .expect("tokens.json: invalid JSON");
     raw.into_iter()
-        .map(|(chain, tokens)| {
+        .map(|(id, section)| {
             // A chain that fails to resolve must fail loudly: dropping it would silently drop its kinds.
-            let chain: NamedChain = chain
-                .parse()
-                .unwrap_or_else(|_| panic!("unknown chain name: {chain}"));
-            (chain, tokens)
+            let chain =
+                NamedChain::try_from(id).unwrap_or_else(|_| panic!("unknown chain ID: {id}"));
+            (chain, section.tokens)
         })
         .collect()
 });
