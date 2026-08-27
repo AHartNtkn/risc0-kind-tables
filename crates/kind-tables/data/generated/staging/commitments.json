@@ -1,10 +1,10 @@
 {
   "84532": {
     "_comment": "base-sepolia",
-    "commitment": "c4de914b682296f29617c7d34f43d0ab22b22fd569d1f44b8f514b605dbb27fa"
+    "commitment": "837f7dce151d63183e91d2f75a0b62f9f61eaf90c26360f8200e19b605ee1f0d"
   },
   "11155111": {
     "_comment": "sepolia",
-    "commitment": "a9d26868ae1dcc9eb696b25865a7d93e86cc7b9d8ff9cf26c3c40b0cfe781c51"
+    "commitment": "81669718ba00917043235ee99ae1c5d07df9698efb804b6e634cd157aae0359b"
   }
 }
