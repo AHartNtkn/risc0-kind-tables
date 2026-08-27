@@ -121,7 +121,10 @@ fn chain_entries(
         Some(forwarder) => {
             for token in supported {
                 entries.push(entry(
-                    format!("{} via ERC20 forwarder {forwarder}", token.symbol),
+                    format!(
+                        "{} {} via ERC20 forwarder {forwarder}",
+                        token.symbol, token.address
+                    ),
                     transfer_logic,
                     sha256(&[forwarder.as_slice(), token.address.as_slice()].concat()),
                 )?);
