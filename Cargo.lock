@@ -1087,8 +1087,11 @@ dependencies = [
  "anoma-kind-tables",
  "anoma-pa-evm-bindings",
  "anoma-rm-risc0 2.0.0-rc.4",
+ "anomapay-erc20-forwarder-bindings",
  "anyhow",
+ "hex",
  "risc0-zkvm",
+ "serde_json",
  "tokio",
 ]
 

@@ -5,4 +5,4 @@ arm-risc0 keeps its table hashing private behind a process-global, load-once, fi
 ## Consequences
 
 - The cross-check is not scaffolding: even after arm-risc0 exposes its hashing, it stays as the only assertion tying published commitments to what the circuit computes.
-- Upstreaming (public hash, non-global table, point-carrying JSON schema) is a follow-up, not a blocker; the schema change is the one genuinely blocking piece, since no prover can load an alias until the loader stops deriving points from keys.
+- Upstreaming (public hash, non-global table, point-carrying JSON schema) is a follow-up, not a blocker; the schema change is the one genuinely blocking piece, since no prover can load a fungibility domain member until the loader stops using every kind as its own kind point.
