@@ -4,7 +4,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    #[error("hash-to-curve failed for the key ({logic_ref}, {label_ref})")]
+    #[error("hash-to-curve failed for the kind ({logic_ref}, {label_ref})")]
     KindDerivationFailed {
         logic_ref: String,
         label_ref: String,
