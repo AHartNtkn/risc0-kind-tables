@@ -4,9 +4,9 @@ Changes accumulate on `next` and are promoted through `staging` to `main`, match
 
 ## Changing a table on `next`
 
-1. Edit `data/tokens.json` or `data/aliases.json`, or bump a dependency pin (a circuit ID, a forwarder or protocol adapter record).
+1. Edit `data/tokens.json` or `data/circuit-versions.json`, or bump a forwarder or protocol adapter record. Never raise a circuit pin without listing the release: the generator stops. See *Add a circuit version* in the [README](README.md#add-a-circuit-version).
 2. Run `just generate` and commit the inputs together with the generated diff.
-3. Review any alias in the diff as what it is: an authorization making two kinds fungible at par.
+3. Review every new member in the diff as what it is: a decision that resources of two circuit versions balance against each other, one for one.
 4. Merge into `next` once the pull request is green.
 
 ## Updating the staging environment

@@ -41,11 +41,12 @@ impl Table {
             .all(|pair| pair[0].key() < pair[1].key())
     }
 
-    /// The entries whose point is not the one their key hashes to — the review surface.
+    /// The aliases: the entries assigned another kind as their kind point. Only the table can express them, and they
+    /// are the review surface.
     pub fn aliases(&self) -> Vec<&Entry> {
         self.entries
             .iter()
-            .filter(|entry| !entry.is_canonical())
+            .filter(|entry| entry.is_alias())
             .collect()
     }
 }
@@ -133,6 +134,76 @@ environment_module!(production, "../data/generated/production/commitments.json")
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::entry::Metadata;
+    use crate::kind;
+    use anomapay_erc20_forwarder_bindings::addresses::{Environment, erc20_forwarder_address};
+
+    /// No kind point is authored. An ERC20 entry is assigned its fungibility domain's kind point — the kind of the
+    /// active version under the label of the chain's current forwarder — and every alias says so in `alias_of`.
+    /// Every other entry is assigned its own kind. This reads the embedded tables only.
+    #[test]
+    fn erc20_entries_share_their_fungibility_domains_kind_point() {
+        for (module, environment, tables) in [
+            ("staging", Environment::Staging, staging::tables()),
+            ("production", Environment::Production, production::tables()),
+        ] {
+            for (chain, table) in tables {
+                let current = erc20_forwarder_address(environment, chain);
+                for entry in &table.entries {
+                    let Some(Metadata::Erc20 { token, status, .. }) = &entry.metadata else {
+                        assert!(
+                            !entry.is_alias(),
+                            "{module} {chain}: an entry outside every fungibility domain is not assigned its own kind"
+                        );
+                        continue;
+                    };
+                    let current = current.unwrap_or_else(|| {
+                        panic!("{module} {chain}: an ERC20 entry but no forwarder recorded")
+                    });
+                    let active = crate::circuits::erc20_active();
+                    let active_label = kind::erc20_label_ref(&current, token);
+                    let domain =
+                        kind::point(&active.logic_ref, &active_label).expect("a kind derives");
+                    assert_eq!(
+                        entry.kind_point, domain,
+                        "{module} {chain}: an ERC20 entry is not assigned its fungibility domain's kind point"
+                    );
+                    let listed =
+                        crate::circuits::erc20_version(&entry.logic_ref).unwrap_or_else(|| {
+                            panic!("{module} {chain}: an ERC20 entry of an unlisted version")
+                        });
+                    assert_eq!(
+                        *status, listed.status,
+                        "{module} {chain}: an entry's status differs from its version's"
+                    );
+                    match entry.metadata.as_ref().and_then(Metadata::alias_of) {
+                        None => {
+                            assert!(
+                                !entry.is_alias(),
+                                "{module} {chain}: an entry without alias_of is an alias"
+                            );
+                            assert_eq!(
+                                (entry.logic_ref, entry.label_ref),
+                                (active.logic_ref, active_label),
+                                "{module} {chain}: only the active version under the current forwarder has no alias_of"
+                            );
+                        }
+                        Some(alias_of) => {
+                            assert!(
+                                entry.is_alias(),
+                                "{module} {chain}: an entry with alias_of is not an alias"
+                            );
+                            assert_eq!(
+                                (&alias_of.version, alias_of.logic_ref, alias_of.label_ref),
+                                (&active.version, active.logic_ref, active_label),
+                                "{module} {chain}: alias_of does not name the active version under the current forwarder"
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     /// The macro invocation lists the table files by hand, so pin it to `commitments.json`.
     #[test]

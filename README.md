@@ -6,7 +6,7 @@ The kind tables the Anoma protocol adapters are committed to — one per chain p
 
 ## How it fits together
 
-A kind table maps `(logic_ref, label_ref)` keys to kind points. Its commitment — SHA-256 over the ordered entries — is what a protocol adapter stores via `setKindTableCommitment` and what every compliance proof reproduces. A chain's table is derived: the padding entry from `anoma-rm-risc0`, the generic call entry from the recorded forwarder, and one ERC20 entry per supported token from the recorded ERC20 forwarder. Aliases — entries whose point belongs to another key, the migration path between resource logic versions — are the only authored rows; everything else is machine-checked against its key.
+A kind table maps kinds, written as `(logic_ref, label_ref)`, to kind points. Its commitment — SHA-256 over the ordered entries — is what a protocol adapter stores via `setKindTableCommitment` and what every compliance proof reproduces. A chain's table is derived: the padding entry from `anoma-rm-risc0`, the generic call entry from the recorded forwarder, and one ERC20 entry per supported token from the recorded ERC20 forwarder. The ERC20 entries of one token form a fungibility domain: every listed circuit version under the forwarder's label, all assigned the kind of the active version under that label, so their resources are fungible. Every entry is machine-checked — an alias against its fungibility domain, every other entry against its own kind — and no kind point is authored.
 
 ## Layout
 
@@ -14,7 +14,7 @@ A kind table maps `(logic_ref, label_ref)` keys to kind points. Its commitment �
 crates/kind-tables/            the library and the generator
 ├── data/
 │   ├── tokens.json            authored: the supported tokens, per chain
-│   ├── aliases.json           authored: the aliasing decisions, per chain
+│   ├── circuit-versions.json  authored: the ERC20 circuit versions, once for every chain
 │   └── generated/
 │       ├── staging/           <chain id>.json tables + commitments.json
 │       └── production/
@@ -23,15 +23,109 @@ crates/integration-test/       on-chain token validation, promotion freshness ga
 docs/adr/                      the decisions behind this layout
 ```
 
-Every chain-keyed file — `tokens.json`, `aliases.json`, `commitments.json` — is keyed by chain ID, as the forwarder and protocol adapter deployment records they are generated from are, and each section carries the chain name in a `_comment` the loaders ignore. A generated table is named for the chain ID it belongs to and is otherwise `anoma-rm-risc0`'s kind table schema, so `init_kind_table_from_file` reads one unchanged.
+Every chain-keyed file — `tokens.json`, `commitments.json` — is keyed by chain ID, as the forwarder and protocol adapter deployment records they are generated from are, and each section carries the chain name in a `_comment` the loaders ignore. A generated table is named for the chain ID it belongs to and is otherwise `anoma-rm-risc0`'s kind table schema, so `init_kind_table_from_file` reads one unchanged.
+
+## Entries
+
+An entry carries its kind, the kind point it is assigned, and a `_metadata` object naming what the kind belongs to. The commitment covers `logic_ref`, `label_ref` and `kind_point` only, so `_metadata` is free to carry whatever a reviewer needs and never moves the commitment. `version` is the version of the circuit crate that owns `logic_ref`, read from the resolved dependency graph, so bumping a pin cannot leave a stale version behind. `type` names the resource the kind belongs to: `PaddingResource`, `ERC20Resource`, or `GenericCallResource`.
+
+```json
+{
+  "_metadata": {
+    "type": "ERC20Resource",
+    "version": "2.0.0",
+    "name": "WETH",
+    "token": "0x4200000000000000000000000000000000000006",
+    "forwarder": "0xE54182d915dE447deFc4A17Ec1D4E0dc627551F7"
+  },
+  "logic_ref": "bc12323668c37c3d381ca798f11116f35fb1639d12239b29da7810df3985e7ad",
+  "label_ref": "55008fad9bfccef776960bfca715e365cfba843cfb947190fafc69e4d9fac674",
+  "kind_point": "047494d66fd5abf01f4eb01d204f9c288db95873e6696cc0c5e143855d2a36000fa2c0ba7484f59110ffdfdd546e064c595d0ab979f09c48c26285f3aba5dc2471"
+}
+```
+
+That row is a member of the WETH fungibility domain on Base Sepolia. A fungibility domain is one forwarder holding one token, and every listed circuit version has a member under that forwarder's label, all carrying the same `kind_point`. The kind point is the kind of the active version under that label, so that version's entries are assigned their own kind and every deprecated version's are aliases of them; a version outside the fungibility domain is fungible with nothing. Padding and generic call have no fungibility domain and are assigned their own kind, which the circuit would use anyway.
+
+An alias also says what it is a second name for. Its `alias_of` names the kind it takes its kind point from, so a reviewer reads it without recomputing anything. When version 3.0.0 becomes active, 2.0.0 becomes deprecated, every kind point moves to 3.0.0's kind, and the WETH row for 2.0.0 becomes this:
+
+```json
+{
+  "_metadata": {
+    "type": "ERC20Resource",
+    "version": "2.0.0",
+    "name": "WETH",
+    "token": "0x4200000000000000000000000000000000000006",
+    "forwarder": "0xE54182d915dE447deFc4A17Ec1D4E0dc627551F7",
+    "status": "deprecated",
+    "alias_of": {
+      "version": "3.0.0",
+      "logic_ref": "<the transfer logic ref of version 3.0.0>",
+      "label_ref": "55008fad9bfccef776960bfca715e365cfba843cfb947190fafc69e4d9fac674"
+    }
+  },
+  "logic_ref": "bc12323668c37c3d381ca798f11116f35fb1639d12239b29da7810df3985e7ad",
+  "label_ref": "55008fad9bfccef776960bfca715e365cfba843cfb947190fafc69e4d9fac674",
+  "kind_point": "<3.0.0's kind under this label, the same as the new 3.0.0 row's>"
+}
+```
+
+Members are never authored. A circuit release is one appended line in [`crates/kind-tables/data/circuit-versions.json`](crates/kind-tables/data/circuit-versions.json):
+
+```json
+{
+  "ERC20Resource": [
+    { "version": "2.0.0", "logic_ref": "bc12323668c37c3d381ca798f11116f35fb1639d12239b29da7810df3985e7ad", "status": "deprecated" },
+    { "version": "3.0.0", "logic_ref": "<the transfer logic ref of version 3.0.0>", "status": "active" }
+  ]
+}
+```
+
+The generator then writes one more member per token on every chain that has the token, so neither a token nor a chain can be left out, and checks every version whose crate is pinned against the logic ref that crate compiles to. Nothing is ever removed from the list: a version the protocol adapter refuses stays listed, with rows that nothing can use (ADR-0008).
 
 ## Workflows
 
-Add a token: edit `data/tokens.json`, run `just generate`, commit both. The token validation test checks the contract reports the recorded identity on every pull request and push.
+Adding a token and listing a circuit version both change a chain's entries, and therefore change its commitment. A transaction built against the new table verifies only after that chain's protocol adapter stores the new commitment, so both end in *Update the deployed commitments*.
 
-Add an alias: edit `data/aliases.json`, run `just generate`, review the alias in the generated diff — an alias makes two kinds fungible, so it carries the weight of a mint authorization.
+### Add a token
 
-Update the deployed commitments: after a merge into `next`, install each chain's commitment from `data/generated/<environment>/commitments.json` with the protocol adapter repo's `contracts-*-kind-table-*` recipes. The promotion pull request into `staging` or `main` then proves every protocol adapter of that environment stores what this source generates.
+1. Add the token to [`crates/kind-tables/data/tokens.json`](crates/kind-tables/data/tokens.json), under the chain it lives on.
+2. Run `just generate`.
+3. Commit the edited file together with the regenerated tables.
+
+The token validation test runs on every pull request and push. It calls the contract and checks that it reports the recorded symbol, name and decimals.
+
+### Add a circuit version
+
+Listing a version makes its resources fungible with every other listed version's, behind the same forwarder, one for one. Nothing passes from one version to another: both kinds are assigned one kind point. Exactly one version is active — it keeps its own kind, and the backend creates its resources — and it must be the highest listed; every other version is deprecated, an alias of the active one, which the backend only consumes. Making a version active moves every ERC20 kind point on every chain to its kind. Review the change as carefully as a permission to create new tokens.
+
+The release joins the dependency graph under a new name, so that the generator can check the logic ref you list against the one the crate compiles to. The current pin stays.
+
+1. Add the release to `[workspace.dependencies]` in [`Cargo.toml`](Cargo.toml) under a new name:
+   ```toml
+   transfer_library = "2.0.0"                                                 # unchanged
+   transfer_library_v3 = { package = "transfer_library", version = "3.0.0" }
+   ```
+2. Add the same name to [`crates/kind-tables/Cargo.toml`](crates/kind-tables/Cargo.toml), as an optional dependency and in the `generate` feature list.
+3. In [`crates/kind-tables/src/bin/generate.rs`](crates/kind-tables/src/bin/generate.rs), add its version to `Versions` and `versions()`, and one line to `pinned_erc20_circuits`:
+   ```rust
+   (versions.transfer_v3.clone(), digest(transfer_library_v3::TOKEN_TRANSFER_ID.as_bytes())),
+   ```
+4. In [`crates/kind-tables/data/circuit-versions.json`](crates/kind-tables/data/circuit-versions.json), append the version with `"status": "active"` and set the previous active version to `"deprecated"`.
+5. Run `just generate`. Read the diff: one new row per token on every chain, and every older version's rows now alias the new one.
+6. Commit the edited files together with the regenerated tables.
+
+Old resources leave through the new version once the forwarder accepts it, which is an upgrade in the forwarder repository. The promotion gate reads each chain's forwarder and requires that the logic ref it accepts is listed.
+
+### Retire a forwarder
+
+When a forwarder's tokens move to a new one, its label stays a member of every fungibility domain it backed, for the logic refs it accepted, so the resources created behind it can still convert and leave. That record belongs to the forwarder repository's `deployments.json`, next to the current proxy, where its fork tests verify it against the chain. Here, bump the forwarder bindings and run `just generate`. The bindings do not expose the record yet; see `TODO.md`.
+
+### Update the deployed commitments
+
+1. Merge into `next`.
+2. Read each chain's commitment from `crates/kind-tables/data/generated/<environment>/commitments.json`.
+3. Install it with the protocol adapter repo's `contracts-*-kind-table-*` recipes, which call `setKindTableCommitment`.
+4. Open the promotion pull request into `staging` or `main`. It passes only when every protocol adapter of that environment already stores the commitment this source generates.
 
 ## Verifying
 
