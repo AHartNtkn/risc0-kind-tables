@@ -14,8 +14,6 @@ A member's `forwarder` is an address. Its contract version — `version()` on a 
 
 Two upstream follow-ups remain, and neither blocks anything here. The hashing stays private — `hash_kind_table_entries` is not public, and `kind_table_hash` reports only the loaded table — which is why this repo keeps `commitment::of` (ADR-0004). The table stays a process-global that admits one load per process; `init_kind_table_from_entries` builds it from entries instead of a file but installs it in the same place, so a test that needs two tables in one process still cannot have them.
 
-ADR-0004 is out of date on both counts. It names `global_kind_table_hash`, which rc.5 renamed to `kind_table_hash`, and it calls the schema change the one blocking piece.
-
 ## Decide what a listed circuit version names
 
 `circuit-versions.json` records one `version` per circuit, and the generator requires the pinned crate's version to be listed with the logic ref that crate compiles to. The crate version and the circuit move apart: `transfer_library` went from 2.0.0 to 3.0.0-rc.2 with the same logic ref `bc1232…`, because the release kept the circuit binaries. The list holds one entry per logic ref, so the only way through was to rewrite the version of the entry that was there. Every generated row of that circuit then changed its `_metadata.version`, while its kind point, and so each chain's commitment, stayed as it was.
