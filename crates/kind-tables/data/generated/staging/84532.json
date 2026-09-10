@@ -2,16 +2,16 @@
   {
     "_metadata": {
       "type": "PaddingResource",
-      "version": "2.0.0-rc.4"
+      "version": "2.0.0-rc.5"
     },
-    "logic_ref": "034c170fc2045f5e257110eb369e57ea5dc72d6dd83dab69746afc2bec6e1847",
+    "logic_ref": "7421e29e44360f11f05c1c754aa47830b0363f9d1cd23d02ba9364c2b521a4e1",
     "label_ref": "0000000000000000000000000000000000000000000000000000000000000000",
-    "kind_point": "04f26d28c79607587b4d2ea0dce801dfe997358e247605bc0ab669073d59253e5bc45b50d149da0a68d3976671f1f23cfbeaefa6bbd56feb89b1fd0c64eaba6f58"
+    "kind_point": "04ddfe9fc72ef96af79abacebdf7a47401568b01425e19738d93d7d411db0bbdeded1fdc7f2b782f1415a86aba64e8f50397aa91a779f80753febd6a70770a7d62"
   },
   {
     "_metadata": {
       "type": "ERC20Resource",
-      "version": "2.0.0",
+      "version": "3.0.0-rc.2",
       "name": "WETH",
       "token": "0x4200000000000000000000000000000000000006",
       "forwarder": "0xE54182d915dE447deFc4A17Ec1D4E0dc627551F7",
@@ -24,7 +24,7 @@
   {
     "_metadata": {
       "type": "ERC20Resource",
-      "version": "2.0.0",
+      "version": "3.0.0-rc.2",
       "name": "XAN",
       "token": "0xADb9D61D8DC3Bc932b3D31053FB268204A7dFF8c",
       "forwarder": "0xE54182d915dE447deFc4A17Ec1D4E0dc627551F7",
@@ -37,7 +37,7 @@
   {
     "_metadata": {
       "type": "ERC20Resource",
-      "version": "2.0.0",
+      "version": "3.0.0-rc.2",
       "name": "USDT",
       "token": "0x323e78f944A9a1FcF3a10efcC5319DBb0bB6e673",
       "forwarder": "0xE54182d915dE447deFc4A17Ec1D4E0dc627551F7",
@@ -50,7 +50,7 @@
   {
     "_metadata": {
       "type": "ERC20Resource",
-      "version": "2.0.0",
+      "version": "3.0.0-rc.2",
       "name": "EURC",
       "token": "0x808456652fdb597867f38412077A9182bf77359F",
       "forwarder": "0xE54182d915dE447deFc4A17Ec1D4E0dc627551F7",
@@ -63,7 +63,7 @@
   {
     "_metadata": {
       "type": "ERC20Resource",
-      "version": "2.0.0",
+      "version": "3.0.0-rc.2",
       "name": "USDC",
       "token": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
       "forwarder": "0xE54182d915dE447deFc4A17Ec1D4E0dc627551F7",
@@ -76,7 +76,7 @@
   {
     "_metadata": {
       "type": "GenericCallResource",
-      "version": "1.0.0",
+      "version": "3.0.0-rc.2",
       "forwarder": "0x92Dfab3b59f3C92dba8fa6d73106d0d729d3ad57"
     },
     "logic_ref": "de1d88738d93b2c67bcd7d2515e22a093bbf7f08ecd88ab24030c301a416621a",
