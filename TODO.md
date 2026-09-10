@@ -12,6 +12,19 @@ A member's `forwarder` is an address. Its contract version — `version()` on a 
 
 `init_kind_table_from_file` assigns every kind itself as its kind point and ignores the file's `kind_point`, so a table loaded through it keeps only the active version in each fungibility domain, silently assigns every other member its own kind, and no longer hashes to the commitment the protocol adapter stores. The backend builds entries from this crate directly and is not affected. Local verification in arm (`Transaction::verify`) is, and so is any other consumer that loads a file. The loader should read the kind point when present (ADR-0004).
 
+## Decide what a listed circuit version names
+
+`circuit-versions.json` records one `version` per circuit, and the generator requires the pinned crate's version to be listed with the logic ref that crate compiles to. The crate version and the circuit move apart: `transfer_library` went from 2.0.0 to 3.0.0-rc.2 with the same logic ref `bc1232…`, because the release kept the circuit binaries. The list holds one entry per logic ref, so the only way through was to rewrite the version of the entry that was there. Every generated row of that circuit then changed its `_metadata.version`, while its kind point, and so each chain's commitment, stayed as it was.
+
+Four questions follow. They need a call with Xuyang, who cuts the circuit releases.
+
+- Does `version` name the crate or the circuit? If it names the circuit, the generator must stop matching it against the crate version, and the crate version belongs in `_metadata` alone.
+- When several crate versions ship one logic ref, which one is listed? Only the pinned crate can be checked against a compiled logic ref.
+- Should a release that keeps the logic ref change the tables at all? Today it does, through `_metadata`, so a reviewer reads a table diff that moves no kind.
+- Does a release candidate belong in the list? `3.0.0-rc.2` is listed today, and `3.0.0` would replace it by the same rewrite.
+
+`circuits::check_erc20` compares versions with semver and requires the active one to be the highest. A crate republished at a higher version meets that rule without anything changing in the resource machine.
+
 ## Store a copy of the published tables, and test against it
 
 No test catches a deleted entry. Deleting an entry that is not an alias is safe, because the circuit uses the kind itself. Deleting an alias is not: the kind is then its own kind point, outside every fungibility domain, and its resources can no longer convert. Review is the only guard, and `CODEOWNERS` routes it to a named person.
