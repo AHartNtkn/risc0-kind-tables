@@ -8,9 +8,13 @@ A forwarder whose tokens moved to the current one must keep its label as a membe
 
 A member's `forwarder` is an address. Its contract version — `version()` on a v1 forwarder, `VERSION()` on v2 — would tell a reader which generation a row belongs to without knowing the addresses. There is no offline source for it today; the retired record above carries it for retired forwarders, and the current forwarder's would need the same in the bindings.
 
-## Make `anoma-rm-risc0` load a point
+## Take the table hashing and the loader out of the process-global
 
-`init_kind_table_from_file` assigns every kind itself as its kind point and ignores the file's `kind_point`, so a table loaded through it keeps only the active version in each fungibility domain, silently assigns every other member its own kind, and no longer hashes to the commitment the protocol adapter stores. The backend builds entries from this crate directly and is not affected. Local verification in arm (`Transaction::verify`) is, and so is any other consumer that loads a file. The loader should read the kind point when present (ADR-0004).
+`anoma-rm-risc0` 2.0.0-rc.5 reads `kind_point` from the file and checks it, so a table with aliases loads and hashes to the commitment the protocol adapter stores. That was the blocking piece and it is done: `arm_cross_check` loads a full staging table through `init_kind_table_from_file` and matches the local commitment.
+
+Two upstream follow-ups remain, and neither blocks anything here. The hashing stays private — `hash_kind_table_entries` is not public, and `kind_table_hash` reports only the loaded table — which is why this repo keeps `commitment::of` (ADR-0004). The table stays a process-global that admits one load per process; `init_kind_table_from_entries` builds it from entries instead of a file but installs it in the same place, so a test that needs two tables in one process still cannot have them.
+
+ADR-0004 is out of date on both counts. It names `global_kind_table_hash`, which rc.5 renamed to `kind_table_hash`, and it calls the schema change the one blocking piece.
 
 ## Decide what a listed circuit version names
 
