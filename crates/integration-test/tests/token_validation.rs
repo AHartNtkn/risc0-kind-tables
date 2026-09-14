@@ -3,8 +3,8 @@
 
 use alloy::providers::Provider;
 use alloy::sol;
-use anoma_kind_tables::tokens;
-use anoma_kind_tables_integration_test::provider;
+use anoma_risc0_kind_tables::tokens;
+use anoma_risc0_kind_tables_integration_test::provider;
 use anyhow::{Context, Result, ensure};
 
 sol! {

@@ -33,4 +33,4 @@ thiserror = "2.0.19"
 tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros"] }
 transfer_library = "2.0.0"
 
-anoma-kind-tables = { path = "crates/kind-tables" }
+anoma-risc0-kind-tables = { path = "crates/kind-tables" }

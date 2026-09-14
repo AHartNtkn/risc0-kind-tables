@@ -3,10 +3,10 @@
 //! `PROMOTION_TARGET` for a local run); a table change is deployed after merging into `next`, and the promotion
 //! pull request turning green is the proof it happened.
 
-use anoma_kind_tables::table;
-use anoma_kind_tables_integration_test::provider;
 use anoma_pa_evm_bindings::addresses::Environment;
 use anoma_pa_evm_bindings::contract::protocol_adapter;
+use anoma_risc0_kind_tables::table;
+use anoma_risc0_kind_tables_integration_test::provider;
 use anyhow::{Context, Result, ensure};
 use risc0_zkvm::Digest;
 use std::collections::BTreeMap;

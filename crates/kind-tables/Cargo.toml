@@ -1,5 +1,5 @@
 [package]
-name = "anoma-kind-tables"
+name = "anoma-risc0-kind-tables"
 version.workspace = true
 description = "The kind tables the Anoma protocol adapters are committed to, and the supported-token list they are built from."
 keywords.workspace = true
