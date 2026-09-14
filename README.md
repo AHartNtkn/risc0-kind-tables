@@ -1,6 +1,6 @@
 # Anoma Kind Tables
 
-[![Crates](https://github.com/anoma/kind-tables/actions/workflows/crates.yml/badge.svg)](https://github.com/anoma/kind-tables/actions/workflows/crates.yml)
+[![Crates](https://github.com/anoma/risc0-kind-tables/actions/workflows/crates.yml/badge.svg)](https://github.com/anoma/risc0-kind-tables/actions/workflows/crates.yml)
 
 The kind tables the Anoma protocol adapters are committed to — one per chain per environment — and the supported-token list they are built from. The `anoma-kind-tables` crate computes the commitments the way the compliance circuit does, so one source answers what every protocol adapter must store.
 
