@@ -19,7 +19,7 @@ crates/kind-tables/            the library and the generator
 │       ├── staging/           <chain id>.json tables + commitments.json
 │       └── production/
 └── src/
-crates/integration-test/       on-chain token validation, promotion freshness gate, arm-risc0 cross-check
+crates/integration-test/       on-chain token and forwarder checks, promotion freshness gate, arm-risc0 cross-check
 docs/adr/                      the decisions behind this layout
 ```
 

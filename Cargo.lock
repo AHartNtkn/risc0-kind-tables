@@ -1099,6 +1099,7 @@ version = "0.1.0"
 dependencies = [
  "alloy",
  "alloy-chains",
+ "anoma-generic-call-forwarder-bindings",
  "anoma-pa-evm-bindings",
  "anoma-risc0-kind-tables",
  "anoma-rm-risc0",
