@@ -31,7 +31,7 @@ pub enum Metadata {
     #[serde(rename = "PaddingResource")]
     Padding { version: String },
     /// One supported token behind an ERC20 forwarder. `forwarder` is the address inside this kind's label. On
-    /// a row for a retired forwarder it is not the forwarder that holds the tokens, which is always the current one.
+    /// a V1 member it is the V1 forwarder, whose tokens move to the current one.
     #[serde(rename = "ERC20Resource")]
     Erc20 {
         version: String,
