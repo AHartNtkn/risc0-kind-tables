@@ -81,8 +81,8 @@ fn derived(metadata: Metadata, logic_ref: Digest, label_ref: Digest) -> Result<E
 }
 
 /// A member of a token's fungibility domain: one circuit version under one forwarder's label, assigned the
-/// fungibility domain's kind point. `alias_of` names the kind that point is; the active version's own entry
-/// carries none.
+/// fungibility domain's kind point. `alias_of` names the kind that point is; only the active version under the
+/// current forwarder's label carries none, and only that member is active.
 fn member(
     circuit: &CircuitVersion,
     token: &tokens::Token,
@@ -90,13 +90,18 @@ fn member(
     domain_point: &[u8],
     alias_of: Option<AliasOf>,
 ) -> Entry {
+    let status = if alias_of.is_none() {
+        Status::Active
+    } else {
+        Status::Deprecated
+    };
     Entry {
         metadata: Some(Metadata::Erc20 {
             version: circuit.version.clone(),
             name: token.symbol.clone(),
             token: token.address,
             forwarder,
-            status: circuit.status,
+            status,
             alias_of,
         }),
         logic_ref: circuit.logic_ref,
