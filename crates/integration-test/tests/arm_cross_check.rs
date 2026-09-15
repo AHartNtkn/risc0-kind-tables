@@ -15,8 +15,8 @@ fn staging_table(chain: NamedChain) -> PathBuf {
 
 #[test]
 fn the_local_commitment_matches_the_circuit_loader() {
-    let path = staging_table(NamedChain::BaseSepolia);
-    let table = Table::load(&path).expect("the staging base-sepolia table exists");
+    let path = staging_table(NamedChain::Sepolia);
+    let table = Table::load(&path).expect("the staging sepolia table exists");
 
     init_kind_table_from_file(&path).expect("the upstream loader accepts the generated table");
     assert_eq!(

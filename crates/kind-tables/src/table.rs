@@ -126,8 +126,7 @@ macro_rules! environment_module {
 environment_module!(
     staging,
     "../data/generated/staging/commitments.json",
-    (11155111, "../data/generated/staging/11155111.json"),
-    (84532, "../data/generated/staging/84532.json")
+    (11155111, "../data/generated/staging/11155111.json")
 );
 environment_module!(production, "../data/generated/production/commitments.json");
 
