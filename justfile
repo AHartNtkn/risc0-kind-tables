@@ -18,7 +18,7 @@ default:
 
 # Regenerate `data/generated/` from the authored inputs and the pinned dependencies
 generate:
-    cargo run --package anoma-kind-tables --features generate --bin generate
+    cargo run --package anoma-risc0-kind-tables --features generate --bin generate
 
 # Verify the committed generated tables match a regeneration
 generate-check: generate

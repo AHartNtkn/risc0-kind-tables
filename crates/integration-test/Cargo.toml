@@ -1,5 +1,5 @@
 [package]
-name = "anoma-kind-tables-integration-test"
+name = "anoma-risc0-kind-tables-integration-test"
 version.workspace = true
 description = "Integration tests for the Anoma kind tables: on-chain token identity and commitment freshness."
 publish = false
@@ -13,8 +13,8 @@ edition.workspace = true
 [dependencies]
 alloy = { workspace = true }
 alloy-chains = { workspace = true }
-anoma-kind-tables = { workspace = true }
 anoma-pa-evm-bindings = { workspace = true }
+anoma-risc0-kind-tables = { workspace = true }
 anoma-rm-risc0 = { workspace = true }
 anomapay-erc20-forwarder-bindings = { workspace = true }
 anyhow = { workspace = true }

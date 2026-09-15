@@ -7,7 +7,7 @@ version = "0.1.0"
 keywords = ["anoma", "kind-table", "protocol-adapter"]
 authors = ["Anoma Foundation"]
 license = "MIT"
-repository = "https://github.com/anoma/kind-tables"
+repository = "https://github.com/anoma/risc0-kind-tables"
 homepage = "https://anoma.net/"
 edition = "2024"
 
@@ -33,4 +33,4 @@ thiserror = "2.0.19"
 tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros"] }
 transfer_library = "2.0.0"
 
-anoma-kind-tables = { path = "crates/kind-tables" }
+anoma-risc0-kind-tables = { path = "crates/kind-tables" }

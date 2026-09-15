@@ -5,10 +5,10 @@
 use alloy::primitives::Address;
 use alloy_chains::NamedChain;
 use anoma_generic_call_forwarder_bindings::addresses::Environment as GenericCallEnvironment;
-use anoma_kind_tables::{
+use anoma_pa_evm_bindings::addresses::{Environment, protocol_adapter_deployments_map};
+use anoma_risc0_kind_tables::{
     AliasOf, CircuitVersion, Entry, Metadata, Status, circuits, commitment, kind, tokens,
 };
-use anoma_pa_evm_bindings::addresses::{Environment, protocol_adapter_deployments_map};
 use anomapay_erc20_forwarder_bindings::addresses::Environment as Erc20Environment;
 use anyhow::{Context, Result, bail, ensure};
 use risc0_zkvm::Digest;
@@ -153,7 +153,7 @@ fn versions() -> Result<Versions> {
         .find(|node| {
             node["id"]
                 .as_str()
-                .is_some_and(|id| id.contains("anoma-kind-tables"))
+                .is_some_and(|id| id.contains(env!("CARGO_PKG_NAME")))
         })
         .context("this package is missing from the resolve graph")?;
 

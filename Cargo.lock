@@ -1057,7 +1057,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "anoma-kind-tables"
+name = "anoma-pa-evm-bindings"
+version = "3.0.0-rc.6"
+source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.6#843a24499ad9002329dee0a68bc76ab4340c076a"
+dependencies = [
+ "alloy",
+ "alloy-chains",
+ "anoma-rm-risc0 2.0.0-rc.4",
+ "dotenvy",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.20",
+]
+
+[[package]]
+name = "anoma-risc0-kind-tables"
 version = "0.1.0"
 dependencies = [
  "alloy",
@@ -1079,13 +1093,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "anoma-kind-tables-integration-test"
+name = "anoma-risc0-kind-tables-integration-test"
 version = "0.1.0"
 dependencies = [
  "alloy",
  "alloy-chains",
- "anoma-kind-tables",
  "anoma-pa-evm-bindings",
+ "anoma-risc0-kind-tables",
  "anoma-rm-risc0 2.0.0-rc.4",
  "anomapay-erc20-forwarder-bindings",
  "anyhow",
@@ -1093,20 +1107,6 @@ dependencies = [
  "risc0-zkvm",
  "serde_json",
  "tokio",
-]
-
-[[package]]
-name = "anoma-pa-evm-bindings"
-version = "3.0.0-rc.6"
-source = "git+https://github.com/anoma/pa-evm?tag=bindings%2Fv3.0.0-rc.6#843a24499ad9002329dee0a68bc76ab4340c076a"
-dependencies = [
- "alloy",
- "alloy-chains",
- "anoma-rm-risc0 2.0.0-rc.4",
- "dotenvy",
- "serde",
- "serde_json",
- "thiserror 2.0.20",
 ]
 
 [[package]]
