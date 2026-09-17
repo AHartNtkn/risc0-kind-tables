@@ -57,7 +57,11 @@ The digest a protocol adapter stores and every compliance proof reproduces, cove
 _Avoid_: kind table hash, table root
 
 **Supported token**:
-An ERC20 contract this project maintains kinds for, on a named chain. Being supported is a standing commitment and does not depend on where anything is deployed.
+An ERC20 contract this project maintains kinds for, on a named chain. Being supported is a standing commitment and does not depend on where anything is deployed. Each one says whether its V1 resources are fungible with its current ones.
+
+**V1 fungibility**:
+Whether the V1 forwarder's label joins the fungibility domain of one supported token, which makes that token's V1 resources fungible with its current ones, so they convert and leave. `data/tokens.json` states it per chain and per token in `fungible_with_v1`, and only a token set to `true` gets a member under the V1 forwarder's label.
+_Avoid_: migration (the forwarder repository moves the tokens, and the protocol adapter copies the state; neither is this flag), conversion (what the fungibility permits, not the permission)
 
 **Environment**:
 One of the two protocol adapter deployments a kind table can be installed on, each tracking a branch. Says which deployment, never which chain.

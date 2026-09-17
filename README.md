@@ -6,7 +6,7 @@ The kind tables the Anoma protocol adapters are committed to — one per chain p
 
 ## How it fits together
 
-A kind table maps kinds, written as `(logic_ref, label_ref)`, to kind points. Its commitment — SHA-256 over the ordered entries — is what a protocol adapter stores via `setKindTableCommitment` and what every compliance proof reproduces. A chain's table is derived: the padding entry from `anoma-rm-risc0`, the generic call entry from the recorded forwarder, and one ERC20 entry per supported token from the recorded ERC20 forwarder. The ERC20 entries of one token form a fungibility domain: every listed circuit version under the forwarder's label and, on a chain that ran v1, the V1 forwarder's logic ref under its own label, all assigned the kind of the active version under the current forwarder's label, so their resources are fungible. Every entry is machine-checked — an alias against its fungibility domain, every other entry against its own kind — and no kind point is authored.
+A kind table maps kinds, written as `(logic_ref, label_ref)`, to kind points. Its commitment — SHA-256 over the ordered entries — is what a protocol adapter stores via `setKindTableCommitment` and what every compliance proof reproduces. A chain's table is derived: the padding entry from `anoma-rm-risc0`, the generic call entry from the recorded forwarder, and one ERC20 entry per supported token from the recorded ERC20 forwarder. The ERC20 entries of one token form a fungibility domain: every listed circuit version under the forwarder's label and, for a token marked for conversion on a chain that ran v1, the V1 forwarder's logic ref under its own label, all assigned the kind of the active version under the current forwarder's label, so their resources are fungible. Every entry is machine-checked — an alias against its fungibility domain, every other entry against its own kind — and no kind point is authored.
 
 ## Layout
 
@@ -118,12 +118,12 @@ Old resources leave through the new version once the forwarder accepts it, which
 
 ### Alias the V1 forwarder
 
-On a chain that ran v1, the ERC20 forwarder changes once: the V1 forwarder is immutable, and the current forwarder is a proxy at a new address. Both accept the same logic ref, so a V1 resource differs from a current one only in the forwarder inside its label. On every chain that records both forwarders, the generator writes one member per supported token under the V1 forwarder's label, an alias of the active version under the current forwarder's label.
+On a chain that ran v1, the ERC20 forwarder changes once: the V1 forwarder is immutable, and the current forwarder is a proxy at a new address. Both accept the same logic ref, so a V1 resource differs from a current one only in the forwarder inside its label. On every chain that records both forwarders, the generator writes one member under the V1 forwarder's label for each token the list marks for conversion, an alias of the active version under the current forwarder's label.
 
 1. Record the V1 forwarder, with the logic ref it accepts, in the `v1` array of the forwarder repository's `deployments.json`, and release the forwarder bindings.
-2. Pin the new bindings and run `just generate`. Read the diff: one V1 member per supported token on every chain that records both forwarders.
-3. Check that `tokens.json` lists every token the V1 forwarder wrapped. A token it lacks gets no V1 member, so its V1 resources cannot leave. Nothing checks this.
-4. Commit the regenerated tables.
+2. In [`crates/kind-tables/data/tokens.json`](crates/kind-tables/data/tokens.json), set `fungible_with_v1` to `true` for every token whose V1 resources must be fungible with its current ones, and to `false` for the rest. A token set to `false`, or missing from the list, gets no V1 member, so its V1 resources stay in v1. Nothing checks this.
+3. Pin the new bindings and run `just generate`. Read the diff: one V1 member per marked token on every chain that records both forwarders.
+4. Commit the edited file together with the regenerated tables.
 
 A V1 member lets a V1 resource unwrap from the current forwarder. Install the table while the protocol adapter is paused, and unpause it only after the V1 balances moved to the current forwarder (ADR-0008).
 

@@ -242,10 +242,10 @@ fn chain_entries(
         )?);
     }
 
-    // One fungibility domain per token: every listed circuit version under the current forwarder's label, and the
-    // V1 forwarder's logic ref under its label, all assigned the kind of the active version under the current
-    // forwarder's label. That entry keeps its own kind, so it needs no table to know its kind point; the
-    // deprecated versions and the V1 members are what the table is for.
+    // One fungibility domain per token: every listed circuit version under the current forwarder's label, and, for
+    // a token the list marks for conversion, the V1 forwarder's logic ref under its label, all assigned the
+    // kind of the active version under the current forwarder's label. That entry keeps its own kind, so it needs no
+    // table to know its kind point; the deprecated versions and the V1 members are what the table is for.
     let supported = tokens::on(chain);
     match anomapay_erc20_forwarder_bindings::addresses::erc20_forwarder_address(
         erc20_environment(environment),
@@ -267,7 +267,9 @@ fn chain_entries(
                         (circuit.status == Status::Deprecated).then(|| active_kind.clone());
                     entries.push(member(circuit, token, current, &domain, alias_of));
                 }
-                if let Some(v1) = &v1 {
+                if token.fungible_with_v1
+                    && let Some(v1) = &v1
+                {
                     let circuit = circuits::erc20_version(&v1.logic_ref).with_context(|| {
                         format!(
                             "{chain}: the V1 forwarder {} accepts logic ref {}, which circuit-versions.json does not list",

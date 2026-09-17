@@ -1,8 +1,8 @@
 # TODO
 
-## List every token a V1 forwarder wrapped
+## Keep the marked tokens and the moved tokens the same
 
-A chain's table carries a V1 member only for the tokens in `data/tokens.json`. Before the table is installed on a chain that migrates, `tokens.json` must list every token its V1 forwarder wrapped, and the ERC20 forwarder repository's migration must move the same tokens. A token missing from `tokens.json` gets no V1 member, so its V1 resources cannot leave. A token whose balance does not move must not keep its V1 member when the protocol adapter unpauses. Nothing checks either list; @heueristik makes sure both are right.
+A chain's table carries a V1 member for each token whose `fungible_with_v1` is `true` in `data/tokens.json`. The ERC20 forwarder repository's migration must move exactly those tokens, and a token must not be marked before its balance moves, or a V1 resource can unwrap from a forwarder that does not hold its token. Nothing checks the two against each other; @heueristik makes sure they agree.
 
 ## Carry the forwarder's contract version in `_metadata`
 
