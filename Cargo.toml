@@ -20,7 +20,7 @@ anoma-pa-evm-bindings = "3.0.0-rc.8"
 anoma-rm-risc0 = { version = "2.0.0-rc.5", default-features = false, features = [
   "transaction",
 ] }
-anomapay-erc20-forwarder-bindings = "3.0.0-rc.8"
+anomapay-erc20-forwarder-bindings = "3.0.0-rc.9"
 anyhow = "1.0.104"
 dotenvy = "0.15.7"
 hex = "0.4.3"
