@@ -1,9 +1,5 @@
 # TODO
 
-## Read the V1 forwarders from the forwarder bindings
-
-A V1 forwarder's label must be a member of every ERC20 fungibility domain of its chain, for the logic ref it accepts, or the resources created behind it cannot convert and leave (R2 in ADR-0008). The record belongs to `anomapay-erc20-forwarder`'s `deployments.json`: a top-level `v1` array of `{ "chainId", "forwarder", "logicRef" }`, as pa-evm records its v1 protocol adapters, exposed there by `erc20_forwarder_v1` and checked against the chain. Bindings 3.0.0-rc.9 carries the record; the generator's `v1_erc20_forwarder` still returns nothing. The Galileo v1 to v2 transition needs it on every chain that migrates.
-
 ## List every token a V1 forwarder wrapped
 
 A chain's table carries a V1 member only for the tokens in `data/tokens.json`. Before the table is installed on a chain that migrates, `tokens.json` must list every token its V1 forwarder wrapped, and the ERC20 forwarder repository's migration must move the same tokens. A token missing from `tokens.json` gets no V1 member, so its V1 resources cannot leave. A token whose balance does not move must not keep its V1 member when the protocol adapter unpauses. Nothing checks either list; @heueristik makes sure both are right.

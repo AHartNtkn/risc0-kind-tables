@@ -37,10 +37,15 @@ struct V1Forwarder {
     logic_ref: Digest,
 }
 
-/// The V1 ERC20 forwarder of a chain. The forwarder repository's deployment record is to carry it, verified there
-/// against the chain; until the bindings expose that record, there is none.
-fn v1_erc20_forwarder(_chain: &NamedChain) -> Option<V1Forwarder> {
-    None
+/// The V1 ERC20 forwarder a chain records, from the forwarder repository's deployment record, where its fork tests
+/// verify it against the chain.
+fn v1_erc20_forwarder(chain: &NamedChain) -> Option<V1Forwarder> {
+    anomapay_erc20_forwarder_bindings::addresses::erc20_forwarder_v1(chain).map(|forwarder| {
+        V1Forwarder {
+            address: forwarder.address,
+            logic_ref: digest(forwarder.logic_ref.as_slice()),
+        }
+    })
 }
 
 fn digest(bytes: &[u8]) -> Digest {

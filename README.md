@@ -125,7 +125,7 @@ On a chain that ran v1, the ERC20 forwarder changes once: the V1 forwarder is im
 3. Check that `tokens.json` lists every token the V1 forwarder wrapped. A token it lacks gets no V1 member, so its V1 resources cannot leave. Nothing checks this.
 4. Commit the regenerated tables.
 
-A V1 member lets a V1 resource unwrap from the current forwarder. Install the table while the protocol adapter is paused, and unpause it only after the V1 balances moved to the current forwarder (ADR-0008). The generator does not read the record yet; see `TODO.md`.
+A V1 member lets a V1 resource unwrap from the current forwarder. Install the table while the protocol adapter is paused, and unpause it only after the V1 balances moved to the current forwarder (ADR-0008).
 
 ### Update the deployed commitments
 
