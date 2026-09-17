@@ -1,12 +1,16 @@
 # TODO
 
-## Read retired forwarders from the forwarder bindings
+## Read the V1 forwarders from the forwarder bindings
 
-A forwarder whose tokens moved to the current one must keep its label as a member of every fungibility domain it backed, for the logic refs it accepted, or the resources created behind it cannot convert and leave (R2 in ADR-0008). The record belongs to `anomapay-erc20-forwarder`'s `deployments.json`, next to the current proxy — `{ "address", "version", "logicRefs" }` — verified there against the chain by the fork tests, as the current forwarders already are. The generator's `retired_erc20_forwarders` returns nothing until the bindings expose that record. The Galileo v1 to v2 transition needs it on every chain.
+A V1 forwarder's label must be a member of every ERC20 fungibility domain of its chain, for the logic ref it accepts, or the resources created behind it cannot convert and leave (R2 in ADR-0008). The record belongs to `anomapay-erc20-forwarder`'s `deployments.json`: a top-level `v1` array of `{ "chainId", "forwarder", "logicRef" }`, as pa-evm records its v1 protocol adapters, exposed there by `erc20_forwarder_v1` and checked against the chain. Bindings 3.0.0-rc.9 carries the record; the generator's `v1_erc20_forwarder` still returns nothing. The Galileo v1 to v2 transition needs it on every chain that migrates.
+
+## List every token a V1 forwarder wrapped
+
+A chain's table carries a V1 member only for the tokens in `data/tokens.json`. Before the table is installed on a chain that migrates, `tokens.json` must list every token its V1 forwarder wrapped, and the ERC20 forwarder repository's migration must move the same tokens. A token missing from `tokens.json` gets no V1 member, so its V1 resources cannot leave. A token whose balance does not move must not keep its V1 member when the protocol adapter unpauses. Nothing checks either list; @heueristik makes sure both are right.
 
 ## Carry the forwarder's contract version in `_metadata`
 
-A member's `forwarder` is an address. Its contract version — `version()` on a v1 forwarder, `VERSION()` on v2 — would tell a reader which generation a row belongs to without knowing the addresses. There is no offline source for it today; the retired record above carries it for retired forwarders, and the current forwarder's would need the same in the bindings.
+A member's `forwarder` is an address. Its contract version — `getVersion()` on a V1 forwarder, `VERSION()` on the current one — would tell a reader which generation a row belongs to without knowing the addresses. There is no offline source for it today: neither the V1 record nor the current forwarder's record carries a version.
 
 ## Take the table hashing and the loader out of the process-global
 
