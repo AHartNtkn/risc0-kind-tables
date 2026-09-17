@@ -77,10 +77,10 @@
     "_metadata": {
       "type": "GenericCallResource",
       "version": "3.0.0-rc.2",
-      "forwarder": "0x0B1EfEec748cC77e9c3ad46997B1E1E97803e0D2"
+      "forwarder": "0xAE9dC2Ad68a062b0A0446Caa3A51591800351E0D"
     },
     "logic_ref": "de1d88738d93b2c67bcd7d2515e22a093bbf7f08ecd88ab24030c301a416621a",
-    "label_ref": "267a86ec0175dcd3f9280aff9f8558bc43e81f5043b2ea6af1a66408d4814479",
-    "kind_point": "046b646153d96ae1d5e8c00b4e4856a9bc83052a2fdba1c6867b8ef8ea27026a8c737259b1a09b0fbb0d2763e2c71cdea4188fdc663c2a121361069dd95f3b769d"
+    "label_ref": "2268bbf139f674fee00c8fc78ce86c4c2350a09914081fae1c644b2a163cd165",
+    "kind_point": "0402e2c2a60a381d922491f02caf76bce9a50baff32bc387289b9746cc217d40928c4370a8476a3cc42e2c699ed114c7b23c1571b5c1785be5f37744f1d81f0beb"
   }
 ]
