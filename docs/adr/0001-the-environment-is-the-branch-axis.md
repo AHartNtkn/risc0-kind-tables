@@ -5,4 +5,4 @@ A kind table depends on which circuit versions an environment runs, and a circui
 ## Consequences
 
 - One checkout answers for one environment; what production is committed to is read from `main` or from the chain, never from `next`.
-- Retired logic refs needed by an alias outlive their crates, so they are checked-in data in `data/`, not values imported from a dependency.
+- A listed logic ref outlives its crate, so it is checked-in data in `data/circuit-versions.json`, not a value imported from a dependency.
