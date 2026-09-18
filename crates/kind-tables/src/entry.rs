@@ -31,7 +31,7 @@ pub enum Metadata {
     #[serde(rename = "PaddingResource")]
     Padding { version: String },
     /// One supported token behind an ERC20 forwarder. `forwarder` is the address inside this kind's label. On
-    /// a row for a retired forwarder it is not the forwarder that holds the tokens, which is always the current one.
+    /// a V1 member it is the V1 forwarder, whose tokens move to the current one.
     #[serde(rename = "ERC20Resource")]
     Erc20 {
         version: String,
@@ -40,9 +40,10 @@ pub enum Metadata {
         token: Address,
         #[serde(with = "checksummed")]
         forwarder: Address,
-        /// Whether this is the version the backend creates, or one it only consumes.
+        /// `active` if and only if `alias_of` is absent: the backend creates only that member's resources.
         status: Status,
-        /// The kind this entry takes its kind point from. Absent on the active version's own entry.
+        /// The kind this entry takes its kind point from. Absent only on the active version under the current
+        /// forwarder's label.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         alias_of: Option<AliasOf>,
     },
@@ -86,7 +87,8 @@ impl Entry {
     }
 
     /// Whether the entry is assigned another kind as its kind point, not its own, so that the table is the only
-    /// place it can come from. Padding, generic call and the active version's own entries are not.
+    /// place it can come from. Padding, generic call and the active version under the current forwarder's label
+    /// are not.
     pub fn is_alias(&self) -> bool {
         !kind::point(&self.logic_ref, &self.label_ref).is_ok_and(|point| point == self.kind_point)
     }

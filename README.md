@@ -6,7 +6,7 @@ The kind tables the Anoma protocol adapters are committed to — one per chain p
 
 ## How it fits together
 
-A kind table maps kinds, written as `(logic_ref, label_ref)`, to kind points. Its commitment — SHA-256 over the ordered entries — is what a protocol adapter stores via `setKindTableCommitment` and what every compliance proof reproduces. A chain's table is derived: the padding entry from `anoma-rm-risc0`, the generic call entry from the recorded forwarder, and one ERC20 entry per supported token from the recorded ERC20 forwarder. The ERC20 entries of one token form a fungibility domain: every listed circuit version under the forwarder's label, all assigned the kind of the active version under that label, so their resources are fungible. Every entry is machine-checked — an alias against its fungibility domain, every other entry against its own kind — and no kind point is authored.
+A kind table maps kinds, written as `(logic_ref, label_ref)`, to kind points. Its commitment — SHA-256 over the ordered entries — is what a protocol adapter stores via `setKindTableCommitment` and what every compliance proof reproduces. A chain's table is derived: the padding entry from `anoma-rm-risc0`, the generic call entry from the recorded forwarder, and one ERC20 entry per supported token from the recorded ERC20 forwarder. The ERC20 entries of one token form a fungibility domain: every listed circuit version under the forwarder's label and, for a token marked for conversion on a chain that ran v1, the V1 forwarder's logic ref under its own label, all assigned the kind of the active version under the current forwarder's label, so their resources are fungible. Every entry is machine-checked — an alias against its fungibility domain, every other entry against its own kind — and no kind point is authored.
 
 ## Layout
 
@@ -19,7 +19,7 @@ crates/kind-tables/            the library and the generator
 │       ├── staging/           <chain id>.json tables + commitments.json
 │       └── production/
 └── src/
-crates/integration-test/       on-chain token validation, promotion freshness gate, arm-risc0 cross-check
+crates/integration-test/       on-chain token and forwarder checks, promotion freshness gate, arm-risc0 cross-check
 docs/adr/                      the decisions behind this layout
 ```
 
@@ -44,9 +44,9 @@ An entry carries its kind, the kind point it is assigned, and a `_metadata` obje
 }
 ```
 
-That row is a member of the WETH fungibility domain on Base Sepolia. A fungibility domain is one forwarder holding one token, and every listed circuit version has a member under that forwarder's label, all carrying the same `kind_point`. The kind point is the kind of the active version under that label, so that version's entries are assigned their own kind and every deprecated version's are aliases of them; a version outside the fungibility domain is fungible with nothing. Padding and generic call have no fungibility domain and are assigned their own kind, which the circuit would use anyway.
+That row is a member of the WETH fungibility domain on Base Sepolia. A fungibility domain is one forwarder holding one token, and every listed circuit version has a member under that forwarder's label, all carrying the same `kind_point`. The kind point is the kind of the active version under that label, so that version's entry is assigned its own kind and every deprecated version's are aliases of it; a version outside the fungibility domain is fungible with nothing. Padding and generic call have no fungibility domain and are assigned their own kind, which the circuit would use anyway.
 
-An alias also says what it is a second name for. Its `alias_of` names the kind it takes its kind point from, so a reviewer reads it without recomputing anything. When version 3.0.0 becomes active, 2.0.0 becomes deprecated, every kind point moves to 3.0.0's kind, and the WETH row for 2.0.0 becomes this:
+An alias also says what it is a second name for. Its `alias_of` names the kind it takes its kind point from, so a reviewer reads it without recomputing anything, and its `status` is `deprecated`: a member is `active` if and only if it has no `alias_of`. When version 3.0.0 becomes active, 2.0.0 becomes deprecated, every kind point moves to 3.0.0's kind, and the WETH row for 2.0.0 becomes this:
 
 ```json
 {
@@ -84,7 +84,7 @@ The generator then writes one more member per token on every chain that has the 
 
 ## Workflows
 
-Adding a token and listing a circuit version both change a chain's entries, and therefore change its commitment. A transaction built against the new table verifies only after that chain's protocol adapter stores the new commitment, so both end in *Update the deployed commitments*.
+Adding a token, listing a circuit version and recording a V1 forwarder all change a chain's entries, and therefore change its commitment. A transaction built against the new table verifies only after that chain's protocol adapter stores the new commitment, so all of them end in *Update the deployed commitments*.
 
 ### Add a token
 
@@ -96,7 +96,7 @@ The token validation test runs on every pull request and push. It calls the cont
 
 ### Add a circuit version
 
-Listing a version makes its resources fungible with every other listed version's, behind the same forwarder, one for one. Nothing passes from one version to another: both kinds are assigned one kind point. Exactly one version is active — it keeps its own kind, and the backend creates its resources — and it must be the highest listed; every other version is deprecated, an alias of the active one, which the backend only consumes. Making a version active moves every ERC20 kind point on every chain to its kind. Review the change as carefully as a permission to create new tokens.
+Listing a version makes its resources fungible with every other listed version's, behind the same forwarder, one for one. Nothing passes from one version to another: both kinds are assigned one kind point. Exactly one version is active — under the current forwarder's label it keeps its own kind, and the backend creates its resources — and it must be the highest listed; every other version is deprecated, an alias of the active one, which the backend only consumes. Making a version active moves every ERC20 kind point on every chain to its kind. Review the change as carefully as a permission to create new tokens.
 
 The release joins the dependency graph under a new name, so that the generator can check the logic ref you list against the one the crate compiles to. The current pin stays.
 
@@ -116,9 +116,16 @@ The release joins the dependency graph under a new name, so that the generator c
 
 Old resources leave through the new version once the forwarder accepts it, which is an upgrade in the forwarder repository. The promotion gate reads each chain's forwarder and requires that the logic ref it accepts is listed.
 
-### Retire a forwarder
+### Alias the V1 forwarder
 
-When a forwarder's tokens move to a new one, its label stays a member of every fungibility domain it backed, for the logic refs it accepted, so the resources created behind it can still convert and leave. That record belongs to the forwarder repository's `deployments.json`, next to the current proxy, where its fork tests verify it against the chain. Here, bump the forwarder bindings and run `just generate`. The bindings do not expose the record yet; see `TODO.md`.
+On a chain that ran v1, the ERC20 forwarder changes once: the V1 forwarder is immutable, and the current forwarder is a proxy at a new address. Both accept the same logic ref, so a V1 resource differs from a current one only in the forwarder inside its label. On every chain that records both forwarders, the generator writes one member under the V1 forwarder's label for each token the list marks for conversion, an alias of the active version under the current forwarder's label.
+
+1. Record the V1 forwarder, with the logic ref it accepts, in the `v1` array of the forwarder repository's `deployments.json`, and release the forwarder bindings.
+2. In [`crates/kind-tables/data/tokens.json`](crates/kind-tables/data/tokens.json), set `fungible_with_v1` to `true` for every token whose V1 resources must be fungible with its current ones, and to `false` for the rest. A token set to `false`, or missing from the list, gets no V1 member, so its V1 resources stay in v1. Nothing checks this.
+3. Pin the new bindings and run `just generate`. Read the diff: one V1 member per marked token on every chain that records both forwarders.
+4. Commit the edited file together with the regenerated tables.
+
+A V1 member lets a V1 resource unwrap from the current forwarder. Install the table while the protocol adapter is paused, and unpause it only after the V1 balances moved to the current forwarder (ADR-0008).
 
 ### Update the deployed commitments
 

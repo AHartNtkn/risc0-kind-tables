@@ -1,20 +1,20 @@
 //! The ERC20 circuit versions, read from `data/circuit-versions.json`. Every listed version is a member of every
 //! ERC20 fungibility domain, so its resources are fungible with every other listed version's behind the same
-//! forwarder. Exactly one version is active: it keeps its own kind, which is the kind point of every ERC20
-//! fungibility domain, and the backend creates its resources. Every other version is deprecated: an alias of
-//! the active one, which the backend consumes and converts. Nothing is removed. A version the protocol adapter
-//! refuses stays listed as deprecated, with rows that nothing can use.
+//! forwarder. Exactly one version is active: under the current forwarder's label it keeps its own kind, which is
+//! the kind point of every ERC20 fungibility domain, and the backend creates its resources. Every other version is
+//! deprecated: an alias of the active one, which the backend consumes and converts. Nothing is removed. A version
+//! the protocol adapter refuses stays listed as deprecated, with rows that nothing can use.
 
 use crate::entry::hex_digest;
 use risc0_zkvm::Digest;
 use serde::{Deserialize, Serialize};
 use std::sync::LazyLock;
 
-/// Whether a circuit version is the one the backend creates resources of.
+/// Whether a circuit version, or a member, is the one the backend creates resources of.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Status {
-    /// The one version that keeps its own kind. The backend creates its resources.
+    /// The version that keeps its own kind under the current forwarder's label. The backend creates its resources.
     Active,
     /// An alias of the active version. The backend consumes its resources and converts them.
     Deprecated,

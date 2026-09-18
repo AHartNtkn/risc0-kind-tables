@@ -28,22 +28,24 @@ struct ChainCommitment {
     commitment: String,
 }
 
-/// A forwarder whose tokens moved to the current one. Its label stays a member of every fungibility domain it backed,
-/// so a resource created behind it can still convert and leave: a kind with unspent resources must always have
-/// a way out.
-struct RetiredForwarder {
+/// The immutable ERC20 forwarder of a chain's v1 protocol adapter. Under its label, the logic ref it accepts is a
+/// member of every ERC20 fungibility domain of the chain, so its resources convert and leave through the current
+/// forwarder.
+struct V1Forwarder {
     address: Address,
-    /// The logic refs it accepted. Only these kinds ever existed under its label.
-    logic_refs: Vec<Digest>,
+    /// The logic ref it accepts, the only one its resources carry.
+    logic_ref: Digest,
 }
 
-/// The retired ERC20 forwarders of a chain. The forwarder repository's deployment record is to carry them,
-/// verified there against the chain; until the bindings expose that record, there are none.
-fn retired_erc20_forwarders(
-    _environment: Erc20Environment,
-    _chain: &NamedChain,
-) -> Vec<RetiredForwarder> {
-    Vec::new()
+/// The V1 ERC20 forwarder a chain records, from the forwarder repository's deployment record, where its fork tests
+/// verify it against the chain.
+fn v1_erc20_forwarder(chain: &NamedChain) -> Option<V1Forwarder> {
+    anomapay_erc20_forwarder_bindings::addresses::erc20_forwarder_v1(chain).map(|forwarder| {
+        V1Forwarder {
+            address: forwarder.address,
+            logic_ref: digest(forwarder.logic_ref.as_slice()),
+        }
+    })
 }
 
 fn digest(bytes: &[u8]) -> Digest {
@@ -84,8 +86,8 @@ fn derived(metadata: Metadata, logic_ref: Digest, label_ref: Digest) -> Result<E
 }
 
 /// A member of a token's fungibility domain: one circuit version under one forwarder's label, assigned the
-/// fungibility domain's kind point. `alias_of` names the kind that point is; the active version's own entry
-/// carries none.
+/// fungibility domain's kind point. `alias_of` names the kind that point is; only the active version under the
+/// current forwarder's label carries none, and only that member is active.
 fn member(
     circuit: &CircuitVersion,
     token: &tokens::Token,
@@ -93,13 +95,18 @@ fn member(
     domain_point: &[u8],
     alias_of: Option<AliasOf>,
 ) -> Entry {
+    let status = if alias_of.is_none() {
+        Status::Active
+    } else {
+        Status::Deprecated
+    };
     Entry {
         metadata: Some(Metadata::Erc20 {
             version: circuit.version.clone(),
             name: token.symbol.clone(),
             token: token.address,
             forwarder,
-            status: circuit.status,
+            status,
             alias_of,
         }),
         logic_ref: circuit.logic_ref,
@@ -235,18 +242,17 @@ fn chain_entries(
         )?);
     }
 
-    // One fungibility domain per token: every listed circuit version under the current forwarder's label, and
-    // under the label of every forwarder whose tokens moved to the current one, all assigned the kind of the
-    // active version under the current forwarder's label. The active version keeps its own kind, so it needs
-    // no table to know its kind point; the deprecated versions are what the table is for.
+    // One fungibility domain per token: every listed circuit version under the current forwarder's label, and, for
+    // a token the list marks for conversion, the V1 forwarder's logic ref under its label, all assigned the
+    // kind of the active version under the current forwarder's label. That entry keeps its own kind, so it needs no
+    // table to know its kind point; the deprecated versions and the V1 members are what the table is for.
     let supported = tokens::on(chain);
-    let erc20_environment = erc20_environment(environment);
     match anomapay_erc20_forwarder_bindings::addresses::erc20_forwarder_address(
-        erc20_environment,
+        erc20_environment(environment),
         &chain,
     ) {
         Some(current) => {
-            let retired = retired_erc20_forwarders(erc20_environment, &chain);
+            let v1 = v1_erc20_forwarder(&chain);
             let active = circuits::erc20_active();
             for token in supported {
                 let current_label = kind::erc20_label_ref(&current, &token.address);
@@ -261,23 +267,23 @@ fn chain_entries(
                         (circuit.status == Status::Deprecated).then(|| active_kind.clone());
                     entries.push(member(circuit, token, current, &domain, alias_of));
                 }
-                for forwarder in &retired {
-                    for logic_ref in &forwarder.logic_refs {
-                        let circuit = circuits::erc20_version(logic_ref).with_context(|| {
-                            format!(
-                                "{chain}: the retired forwarder {} accepted logic ref {}, which circuit-versions.json does not list",
-                                forwarder.address,
-                                hex(logic_ref)
-                            )
-                        })?;
-                        entries.push(member(
-                            circuit,
-                            token,
-                            forwarder.address,
-                            &domain,
-                            Some(active_kind.clone()),
-                        ));
-                    }
+                if token.fungible_with_v1
+                    && let Some(v1) = &v1
+                {
+                    let circuit = circuits::erc20_version(&v1.logic_ref).with_context(|| {
+                        format!(
+                            "{chain}: the V1 forwarder {} accepts logic ref {}, which circuit-versions.json does not list",
+                            v1.address,
+                            hex(&v1.logic_ref)
+                        )
+                    })?;
+                    entries.push(member(
+                        circuit,
+                        token,
+                        v1.address,
+                        &domain,
+                        Some(active_kind.clone()),
+                    ));
                 }
             }
         }

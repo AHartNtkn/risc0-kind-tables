@@ -167,15 +167,17 @@ mod tests {
                         entry.kind_point, domain,
                         "{module} {chain}: an ERC20 entry is not assigned its fungibility domain's kind point"
                     );
-                    let listed =
-                        crate::circuits::erc20_version(&entry.logic_ref).unwrap_or_else(|| {
-                            panic!("{module} {chain}: an ERC20 entry of an unlisted version")
-                        });
-                    assert_eq!(
-                        *status, listed.status,
-                        "{module} {chain}: an entry's status differs from its version's"
+                    assert!(
+                        crate::circuits::erc20_version(&entry.logic_ref).is_some(),
+                        "{module} {chain}: an ERC20 entry of an unlisted version"
                     );
-                    match entry.metadata.as_ref().and_then(Metadata::alias_of) {
+                    let alias_of = entry.metadata.as_ref().and_then(Metadata::alias_of);
+                    assert_eq!(
+                        *status == crate::circuits::Status::Active,
+                        alias_of.is_none(),
+                        "{module} {chain}: a member is active if and only if it has no alias_of"
+                    );
+                    match alias_of {
                         None => {
                             assert!(
                                 !entry.is_alias(),

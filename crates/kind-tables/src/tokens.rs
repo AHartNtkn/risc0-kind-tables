@@ -7,13 +7,17 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::sync::LazyLock;
 
-/// The identity of a supported ERC20 token: what the contract itself reports.
+/// The identity of a supported ERC20 token: what the contract itself reports, and whether its V1 resources convert.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Token {
     pub symbol: String,
     pub name: String,
     pub decimals: u8,
     pub address: Address,
+    /// Whether the V1 forwarder's label joins this token's fungibility domain, which makes its V1 resources
+    /// fungible with its current ones, so they convert and leave through the current forwarder. Every token states
+    /// it; a token set to `false` keeps its V1 resources where they are.
+    pub fungible_with_v1: bool,
 }
 
 /// One chain's authored section. The `_comment` naming the chain is review context and is not deserialized.
