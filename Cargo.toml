@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/kind-tables", "crates/integration-test"]
 
 [workspace.package]
-version = "0.1.0"
+version = "1.0.0-rc.0"
 keywords = ["anoma", "kind-table", "protocol-adapter"]
 authors = ["Anoma Foundation"]
 license = "MIT"
