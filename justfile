@@ -44,6 +44,10 @@ crates-build *args:
 crates-test *args:
     cargo test {{ args }}
 
+# Publish anoma-risc0-kind-tables to crates.io
+crates-publish *args:
+    cargo publish --package anoma-risc0-kind-tables {{ args }}
+
 # Lint all crates (clippy)
 crates-lint:
     cargo clippy --all-targets --no-deps -- -Dwarnings
