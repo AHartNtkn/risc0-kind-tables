@@ -41,8 +41,8 @@ fn active<'table>(table: &'table Table, entry: &'table Entry) -> &'table Entry {
         .expect("the table lists the active member of every alias")
 }
 
-/// The delta of a unit that consumes one unit of `consumed` and creates one unit of `created`. The blinding is fixed,
-/// so two deltas differ only by the kinds the constraints look up.
+/// The delta of a unit that consumes one unit of `consumed` and creates one unit of `created`. `rcv` is fixed to 1, so
+/// two deltas differ only in the kind points the unit looks up.
 fn delta(consumed: Kind, created: Kind, table: &[KindTableEntry]) -> ([u32; 8], [u32; 8]) {
     let nf_key = NullifierKey::from_bytes([1; 32]);
     let nk_commitment = nf_key.commit();
