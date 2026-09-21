@@ -32,5 +32,6 @@ serde_json = "1.0.151"
 thiserror = "2.0.19"
 tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros"] }
 transfer_library = "3.0.0-rc.2"
+transfer_witness = "3.0.0-rc.2"
 
 anoma-risc0-kind-tables = { path = "crates/kind-tables" }
