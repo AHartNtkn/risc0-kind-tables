@@ -1109,6 +1109,7 @@ dependencies = [
  "risc0-zkvm",
  "serde_json",
  "tokio",
+ "transfer_witness",
 ]
 
 [[package]]
