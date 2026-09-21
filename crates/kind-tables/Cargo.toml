@@ -10,6 +10,8 @@ homepage.workspace = true
 edition.workspace = true
 
 [features]
+# Converts an entry into the resource machine's kind table entry, for a consumer that loads a table to prove.
+arm = ["dep:anoma-rm-risc0"]
 # The generator reads the live circuit IDs and forwarder deployments, which the library's consumers don't need.
 generate = [
   "dep:anoma-generic-call-forwarder-bindings",

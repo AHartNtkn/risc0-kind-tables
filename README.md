@@ -25,6 +25,8 @@ docs/adr/                      the decisions behind this layout
 
 Every chain-keyed file — `tokens.json`, `commitments.json` — is keyed by chain ID, as the forwarder and protocol adapter deployment records they are generated from are, and each section carries the chain name in a `_comment` the loaders ignore. A generated table is named for the chain ID it belongs to and is otherwise `anoma-rm-risc0`'s kind table schema, so `init_kind_table_from_file` reads one unchanged.
 
+The `arm` feature converts an `Entry` into `anoma-rm-risc0`'s `KindTableEntry`, so a prover loads a recorded table with `init_kind_table_from_entries`, without a file.
+
 ## Entries
 
 An entry carries its kind, the kind point it is assigned, and a `_metadata` object naming what the kind belongs to. The commitment covers `logic_ref`, `label_ref` and `kind_point` only, so `_metadata` is free to carry whatever a reviewer needs and never moves the commitment. `version` is the version of the circuit crate that owns `logic_ref`, read from the resolved dependency graph, so bumping a pin cannot leave a stale version behind. `type` names the resource the kind belongs to: `PaddingResource`, `ERC20Resource`, or `GenericCallResource`.
