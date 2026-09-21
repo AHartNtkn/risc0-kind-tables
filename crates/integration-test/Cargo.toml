@@ -15,7 +15,7 @@ alloy = { workspace = true }
 alloy-chains = { workspace = true }
 anoma-generic-call-forwarder-bindings = { workspace = true }
 anoma-pa-evm-bindings = { workspace = true }
-anoma-risc0-kind-tables = { workspace = true }
+anoma-risc0-kind-tables = { workspace = true, features = ["arm"] }
 anoma-rm-risc0 = { workspace = true }
 anomapay-erc20-forwarder-bindings = { workspace = true }
 anyhow = { workspace = true }
@@ -23,3 +23,4 @@ hex = { workspace = true }
 risc0-zkvm = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
+transfer_witness = { workspace = true }

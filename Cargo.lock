@@ -1073,7 +1073,7 @@ dependencies = [
 
 [[package]]
 name = "anoma-risc0-kind-tables"
-version = "1.0.0-rc.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1095,7 +1095,7 @@ dependencies = [
 
 [[package]]
 name = "anoma-risc0-kind-tables-integration-test"
-version = "1.0.0-rc.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1109,6 +1109,7 @@ dependencies = [
  "risc0-zkvm",
  "serde_json",
  "tokio",
+ "transfer_witness",
 ]
 
 [[package]]
