@@ -61,7 +61,7 @@ fn the_local_commitment_matches_the_circuit_loader() {
 
 #[test]
 fn every_converted_table_commits_to_its_recorded_commitment() {
-    for (module, commitments, tables) in [
+    for (environment, commitments, tables) in [
         ("staging", staging::commitments(), staging::tables()),
         (
             "production",
@@ -74,7 +74,7 @@ fn every_converted_table_commits_to_its_recorded_commitment() {
             assert_eq!(
                 unit_commitment(entries),
                 commitments[chain],
-                "{module} {chain}: a unit given the converted table commits to another table"
+                "{environment} {chain}: a unit given the converted table commits to another table"
             );
         }
     }
