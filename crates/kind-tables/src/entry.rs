@@ -94,6 +94,18 @@ impl Entry {
     }
 }
 
+/// The entry as the resource machine loads it, without the metadata the commitment does not cover.
+#[cfg(feature = "arm")]
+impl From<&Entry> for anoma_rm_risc0::compliance::KindTableEntry {
+    fn from(entry: &Entry) -> Self {
+        Self {
+            logic_ref: entry.logic_ref,
+            label_ref: entry.label_ref,
+            kind_point: entry.kind_point.clone(),
+        }
+    }
+}
+
 pub(crate) mod hex_digest {
     use hex::FromHex;
     use risc0_zkvm::Digest;
