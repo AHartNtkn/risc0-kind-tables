@@ -7,7 +7,7 @@ use alloy_chains::NamedChain;
 use anoma_generic_call_forwarder_bindings::addresses::Environment as GenericCallEnvironment;
 use anoma_pa_evm_bindings::addresses::{Environment, protocol_adapter_deployments_map};
 use anoma_risc0_kind_tables::{
-    AliasOf, CircuitVersion, Entry, Metadata, Status, circuits, commitment, kind, tokens,
+    AliasOf, Chain, CircuitVersion, Entry, Metadata, Status, circuits, commitment, kind, tokens,
 };
 use anomapay_erc20_forwarder_bindings::addresses::Environment as Erc20Environment;
 use anyhow::{Context, Result, bail, ensure};
@@ -241,7 +241,7 @@ fn chain_entries(
     // a token the list marks for conversion, the V1 forwarder's logic ref under its label, all assigned the
     // kind of the active version under the current forwarder's label. That entry keeps its own kind, so it needs no
     // table to know its kind point; the deprecated versions and the V1 members are what the table is for.
-    let supported = tokens::on(chain);
+    let supported = tokens::on(Chain::Evm(chain));
     match anomapay_erc20_forwarder_bindings::addresses::erc20_forwarder_address(
         erc20_environment(environment),
         &chain,
@@ -322,14 +322,14 @@ fn main() -> Result<()> {
         for chain in chains {
             let entries = chain_entries(environment, chain, &versions)?;
             commitments.insert(
-                chain as u64,
+                Chain::Evm(chain).key(),
                 ChainCommitment {
                     comment: chain.to_string(),
                     commitment: hex::encode(commitment::of(&entries).as_bytes()),
                 },
             );
             files.push((
-                format!("{}.json", chain as u64),
+                format!("{}.json", Chain::Evm(chain).file_stem()),
                 serde_json::to_string_pretty(&entries)? + "\n",
             ));
         }

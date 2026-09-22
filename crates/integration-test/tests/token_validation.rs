@@ -3,7 +3,7 @@
 
 use alloy::providers::Provider;
 use alloy::sol;
-use anoma_risc0_kind_tables::tokens;
+use anoma_risc0_kind_tables::{Chain, ChainTokens, tokens};
 use anoma_risc0_kind_tables_integration_test::provider;
 use anyhow::{Context, Result, ensure};
 
@@ -19,7 +19,11 @@ sol! {
 #[tokio::test]
 async fn every_supported_token_reports_its_recorded_identity() -> Result<()> {
     for (&chain, supported) in tokens::all() {
-        let provider = provider(chain)?;
+        // SPL token mints are validated over Solana RPC by the Solana token validation test.
+        let (Chain::Evm(named), ChainTokens::Erc20(supported)) = (chain, supported) else {
+            continue;
+        };
+        let provider = provider(named)?;
         for token in supported {
             let context = || format!("{} ({}) on {chain}", token.symbol, token.address);
 
