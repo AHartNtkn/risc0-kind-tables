@@ -4,6 +4,7 @@
 use crate::chain::{Chain, SolanaCluster};
 use crate::solana::SolanaAddress;
 use alloy::primitives::Address;
+use alloy_chains::NamedChain;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::sync::LazyLock;
@@ -41,7 +42,7 @@ pub enum ChainTokens {
 /// One chain's authored section. The `_comment` naming the chain is review context and is not deserialized.
 #[derive(Deserialize)]
 struct Section {
-    tokens: Vec<serde_json::Value>,
+    tokens: serde_json::Value,
 }
 
 static TOKENS: LazyLock<BTreeMap<Chain, ChainTokens>> = LazyLock::new(|| {
@@ -62,12 +63,8 @@ static TOKENS: LazyLock<BTreeMap<Chain, ChainTokens>> = LazyLock::new(|| {
 });
 
 /// Deserializes a chain's tokens as the type its chain kind lists, failing loudly on a token of the other shape.
-fn typed<T: serde::de::DeserializeOwned>(chain: Chain, tokens: Vec<serde_json::Value>) -> Vec<T> {
-    tokens
-        .into_iter()
-        .map(serde_json::from_value)
-        .collect::<Result<Vec<_>, _>>()
-        .unwrap_or_else(|error| panic!("tokens.json: {chain}: {error}"))
+fn typed<T: serde::de::DeserializeOwned>(chain: Chain, tokens: serde_json::Value) -> Vec<T> {
+    serde_json::from_value(tokens).unwrap_or_else(|error| panic!("tokens.json: {chain}: {error}"))
 }
 
 /// All supported tokens, per chain.
@@ -75,11 +72,12 @@ pub fn all() -> &'static BTreeMap<Chain, ChainTokens> {
     &TOKENS
 }
 
-/// The supported ERC20 tokens on the chain; none on a Solana cluster.
-pub fn on(chain: Chain) -> &'static [Token] {
-    match TOKENS.get(&chain) {
+/// The supported ERC20 tokens on the chain.
+pub fn on(chain: NamedChain) -> &'static [Token] {
+    match TOKENS.get(&Chain::Evm(chain)) {
         Some(ChainTokens::Erc20(tokens)) => tokens,
-        Some(ChainTokens::Spl(_)) | None => &[],
+        None => &[],
+        Some(ChainTokens::Spl(_)) => unreachable!("an EVM chain lists ERC20 tokens"),
     }
 }
 
@@ -87,7 +85,8 @@ pub fn on(chain: Chain) -> &'static [Token] {
 pub fn spl_on(cluster: SolanaCluster) -> &'static [SplToken] {
     match TOKENS.get(&Chain::Solana(cluster)) {
         Some(ChainTokens::Spl(tokens)) => tokens,
-        Some(ChainTokens::Erc20(_)) | None => &[],
+        None => &[],
+        Some(ChainTokens::Erc20(_)) => unreachable!("a Solana cluster lists SPL token mints"),
     }
 }
 
@@ -111,7 +110,6 @@ mod tests {
             "9EHEFzyuY7sZEzTVm7C3uMkNZFMgm5ZeWjGjirZ3MVfr"
         );
         assert_eq!(token.decimals, 6);
-        assert!(on(Chain::Evm(alloy_chains::NamedChain::Sepolia)).len() >= 5);
-        assert!(on(devnet).is_empty(), "a Solana chain has no ERC20 tokens");
+        assert!(on(NamedChain::Sepolia).len() >= 5);
     }
 }

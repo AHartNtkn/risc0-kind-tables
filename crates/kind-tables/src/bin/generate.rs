@@ -241,7 +241,7 @@ fn chain_entries(
     // a token the list marks for conversion, the V1 forwarder's logic ref under its label, all assigned the
     // kind of the active version under the current forwarder's label. That entry keeps its own kind, so it needs no
     // table to know its kind point; the deprecated versions and the V1 members are what the table is for.
-    let supported = tokens::on(Chain::Evm(chain));
+    let supported = tokens::on(chain);
     match anomapay_erc20_forwarder_bindings::addresses::erc20_forwarder_address(
         erc20_environment(environment),
         &chain,
