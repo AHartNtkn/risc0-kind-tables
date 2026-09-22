@@ -67,10 +67,7 @@ impl Chain {
     /// The stem of the chain's generated table file: the key, with the CAIP-2 namespace separator made
     /// filename-safe.
     pub fn file_stem(&self) -> String {
-        match self {
-            Self::Evm(chain) => (*chain as u64).to_string(),
-            Self::Solana(cluster) => cluster.caip2().replace(':', "-"),
-        }
+        self.key().replace(':', "-")
     }
 }
 
