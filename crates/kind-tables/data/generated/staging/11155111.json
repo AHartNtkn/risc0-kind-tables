@@ -2,11 +2,11 @@
   {
     "_metadata": {
       "type": "PaddingResource",
-      "version": "2.0.0-rc.5"
+      "version": "2.0.0-rc.6"
     },
-    "logic_ref": "7421e29e44360f11f05c1c754aa47830b0363f9d1cd23d02ba9364c2b521a4e1",
+    "logic_ref": "5de2a1afac74d1f6fc3ff149cb6ab553044a1467346fbe8775cb4988a6f63cbc",
     "label_ref": "0000000000000000000000000000000000000000000000000000000000000000",
-    "kind_point": "04ddfe9fc72ef96af79abacebdf7a47401568b01425e19738d93d7d411db0bbdeded1fdc7f2b782f1415a86aba64e8f50397aa91a779f80753febd6a70770a7d62"
+    "kind_point": "049da81e7993be9757867f1603122728b4e60b14e5e1aa3413030b82d516ded89186992f2feb8609c1349cb46ab530239c2a16bef3f68fb3736f877d24555fb926"
   },
   {
     "_metadata": {
