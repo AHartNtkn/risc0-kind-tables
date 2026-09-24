@@ -125,7 +125,11 @@ macro_rules! environment_module {
 environment_module!(
     staging,
     "../data/generated/staging/commitments.json",
-    ("11155111", "../data/generated/staging/11155111.json")
+    ("11155111", "../data/generated/staging/11155111.json"),
+    (
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "../data/generated/staging/solana-EtWTRABZaYq6iMfeYKouRu166VU2xqa1.json"
+    )
 );
 environment_module!(production, "../data/generated/production/commitments.json");
 
@@ -244,6 +248,32 @@ mod tests {
                 }
             }
         }
+    }
+
+    /// The staging environment records the solana-devnet table: the test mint's active member under the devnet
+    /// forwarder's label, and nothing else.
+    #[test]
+    fn staging_records_the_solana_devnet_table() {
+        use crate::chain::SolanaCluster;
+        let devnet = Chain::Solana(SolanaCluster::Devnet);
+        let table = staging::table(devnet).expect("solana-devnet is recorded in staging");
+        assert_eq!(table.entries.len(), 1, "one SPL token member");
+        let member = table
+            .entries
+            .iter()
+            .find(|entry| matches!(entry.metadata, Some(Metadata::SplToken { .. })))
+            .expect("an SPL token member");
+        assert_eq!(
+            member.label_ref.to_string(),
+            "53dcbb3ebad803b9f20fc2457f1271b2981e52ed602c240cfbbfafb1d58f7b7a",
+            "the label is sha256(devnet forwarder ‖ test mint)"
+        );
+        assert_eq!(
+            member.logic_ref,
+            crate::circuits::spl_token_active().logic_ref
+        );
+        assert!(!member.is_alias(), "the active version keeps its own kind");
+        assert_eq!(staging::commitment(devnet).unwrap(), table.commitment());
     }
 
     /// The macro invocation lists the table files by hand, so pin it to `commitments.json`.
