@@ -1018,9 +1018,9 @@ dependencies = [
 
 [[package]]
 name = "anoma-generic-call-forwarder-bindings"
-version = "2.0.0-rc.2"
+version = "2.0.0-rc.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abd60348a64cd047bef0c5a6d18079c6cdeea932ea18d18536294b5dbf729209"
+checksum = "3361d70ebdf9b098624ab72fa03433bebabb43e4108aa62935c6f675c506c51b"
 dependencies = [
  "alloy",
  "alloy-chains",
@@ -1169,9 +1169,9 @@ dependencies = [
 
 [[package]]
 name = "anomapay-erc20-forwarder-bindings"
-version = "3.0.0-rc.9"
+version = "3.0.0-rc.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fc50b70e1d59fbccda3b326050118e9881009c9878f614f5f100b6c9be02adf5"
+checksum = "5e2a1726f543f623bf151f2713d7282b146506cc77d7d7a2cb62431fb71228b7"
 dependencies = [
  "alloy",
  "alloy-chains",

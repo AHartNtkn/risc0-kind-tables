@@ -131,10 +131,10 @@
     "_metadata": {
       "type": "GenericCallResource",
       "version": "3.0.0-rc.2",
-      "forwarder": "0xAE9dC2Ad68a062b0A0446Caa3A51591800351E0D"
+      "forwarder": "0x4d3342bf4975ac8d325087FE631357679a0E3c82"
     },
     "logic_ref": "de1d88738d93b2c67bcd7d2515e22a093bbf7f08ecd88ab24030c301a416621a",
-    "label_ref": "2268bbf139f674fee00c8fc78ce86c4c2350a09914081fae1c644b2a163cd165",
-    "kind_point": "0402e2c2a60a381d922491f02caf76bce9a50baff32bc387289b9746cc217d40928c4370a8476a3cc42e2c699ed114c7b23c1571b5c1785be5f37744f1d81f0beb"
+    "label_ref": "3b848bbc421959329e03d4b45e33125fdd879e78596f98287f9510dc129ddc17",
+    "kind_point": "041bf8a5714c38feb95c96e20cde4ef4bc6b9339090810a7dc15b70aa80866d6cd910f7611350ddef377072296db9b658aaed316cffad5c82a5a12ab25da1b03ba"
   }
 ]
