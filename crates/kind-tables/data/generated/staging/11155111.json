@@ -1,15 +1,6 @@
 [
   {
     "_metadata": {
-      "type": "PaddingResource",
-      "version": "2.0.0-rc.6"
-    },
-    "logic_ref": "5de2a1afac74d1f6fc3ff149cb6ab553044a1467346fbe8775cb4988a6f63cbc",
-    "label_ref": "0000000000000000000000000000000000000000000000000000000000000000",
-    "kind_point": "049da81e7993be9757867f1603122728b4e60b14e5e1aa3413030b82d516ded89186992f2feb8609c1349cb46ab530239c2a16bef3f68fb3736f877d24555fb926"
-  },
-  {
-    "_metadata": {
       "type": "ERC20Resource",
       "version": "3.0.0-rc.2",
       "name": "USDT",
